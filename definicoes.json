@@ -1,0 +1,398 @@
+[
+  {
+    "palavra": "Lacônico",
+    "definicao": "Que fala ou escreve pouco; conciso, breve."
+  },
+  {
+    "palavra": "Pletora",
+    "definicao": "Grande quantidade ou excesso de algo."
+  },
+  {
+    "palavra": "Idiossincrasia",
+    "definicao": "Modo de ser ou de reagir próprio de uma pessoa."
+  },
+  {
+    "palavra": "Efêmero",
+    "definicao": "Que dura pouco tempo; passageiro."
+  },
+  {
+    "palavra": "Ubíquo",
+    "definicao": "Que está presente em todos os lugares ao mesmo tempo."
+  },
+  {
+    "palavra": "Perene",
+    "definicao": "Que dura para sempre ou por muito tempo; contínuo."
+  },
+  {
+    "palavra": "Sagaz",
+    "definicao": "Que percebe as coisas com rapidez e inteligência; perspicaz."
+  },
+  {
+    "palavra": "Truculento",
+    "definicao": "Que age com violência ou agressividade."
+  },
+  {
+    "palavra": "Apócrifo",
+    "definicao": "Que não é considerado autêntico ou verdadeiro; de autoria duvidosa."
+  },
+  {
+    "palavra": "Bucólico",
+    "definicao": "Relativo à vida no campo; campestre e tranquilo."
+  },
+  {
+    "palavra": "Cáustico",
+    "definicao": "Que corrói; no sentido figurado, uma crítica mordaz e ácida."
+  },
+  {
+    "palavra": "Diáfano",
+    "definicao": "Transparente, translúcido, que deixa passar a luz."
+  },
+  {
+    "palavra": "Exíguo",
+    "definicao": "Muito pequeno ou escasso."
+  },
+  {
+    "palavra": "Fátuo",
+    "definicao": "Vaidoso e tolo; que se vangloria sem motivo."
+  },
+  {
+    "palavra": "Gregário",
+    "definicao": "Que vive em grupo ou depende do grupo para agir."
+  },
+  {
+    "palavra": "Hediondo",
+    "definicao": "Extremamente repugnante ou cruel."
+  },
+  {
+    "palavra": "Inefável",
+    "definicao": "Que não pode ser expresso em palavras."
+  },
+  {
+    "palavra": "Jocoso",
+    "definicao": "Engraçado, que gosta de brincar; brincalhão."
+  },
+  {
+    "palavra": "Lúgubre",
+    "definicao": "Triste, sombrio, que causa tristeza ou medo."
+  },
+  {
+    "palavra": "Míope",
+    "definicao": "Que enxerga mal de longe; no sentido figurado, de visão limitada."
+  },
+  {
+    "palavra": "Nefasto",
+    "definicao": "Que causa desgraça ou prejuízo grave."
+  },
+  {
+    "palavra": "Obtuso",
+    "definicao": "Pouco perspicaz ou de raciocínio lento."
+  },
+  {
+    "palavra": "Pusilânime",
+    "definicao": "Covarde, que tem pouca coragem."
+  },
+  {
+    "palavra": "Quimera",
+    "definicao": "Ideia ou desejo irrealizável; fantasia."
+  },
+  {
+    "palavra": "Recôndito",
+    "definicao": "Escondido, oculto, de difícil acesso."
+  },
+  {
+    "palavra": "Solerte",
+    "definicao": "Astuto e habilidoso; que age com esperteza."
+  },
+  {
+    "palavra": "Taciturno",
+    "definicao": "Calado, que fala pouco; melancólico."
+  },
+  {
+    "palavra": "Umbroso",
+    "definicao": "Que dá ou tem muita sombra."
+  },
+  {
+    "palavra": "Vívido",
+    "definicao": "Muito claro, intenso e real na descrição ou na cor."
+  },
+  {
+    "palavra": "Zeloso",
+    "definicao": "Que cuida com muita atenção e dedicação."
+  },
+  {
+    "palavra": "Ambíguo",
+    "definicao": "Que pode ter mais de um significado ou interpretação."
+  },
+  {
+    "palavra": "Belicoso",
+    "definicao": "Que gosta de guerra ou conflito; agressivo."
+  },
+  {
+    "palavra": "Cognato",
+    "definicao": "Palavra que tem a mesma origem que outra."
+  },
+  {
+    "palavra": "Débil",
+    "definicao": "Fraco, sem força ou vigor."
+  },
+  {
+    "palavra": "Espúrio",
+    "definicao": "Falso, ilegítimo, que não é genuíno."
+  },
+  {
+    "palavra": "Fortuito",
+    "definicao": "Que acontece por acaso, sem ser planejado."
+  },
+  {
+    "palavra": "Garrulice",
+    "definicao": "Hábito de falar muito; tagarelice."
+  },
+  {
+    "palavra": "Hercúleo",
+    "definicao": "Muito forte, com força extraordinária."
+  },
+  {
+    "palavra": "Ínfimo",
+    "definicao": "Extremamente pequeno; o menor possível."
+  },
+  {
+    "palavra": "Jactância",
+    "definicao": "Ato de se gabar; vaidade exagerada ao falar de si mesmo."
+  },
+  {
+    "palavra": "Lânguido",
+    "definicao": "Sem energia, fraco, cansado; que demonstra falta de ânimo."
+  },
+  {
+    "palavra": "Melindroso",
+    "definicao": "Muito sensível, que se ofende com facilidade."
+  },
+  {
+    "palavra": "Nostálgico",
+    "definicao": "Que sente saudade do passado."
+  },
+  {
+    "palavra": "Opulento",
+    "definicao": "Muito rico; que tem riqueza e fartura."
+  },
+  {
+    "palavra": "Parcimonioso",
+    "definicao": "Que economiza com cuidado; moderado nos gastos."
+  },
+  {
+    "palavra": "Rústico",
+    "definicao": "Simples, sem sofisticação; relativo ao campo."
+  },
+  {
+    "palavra": "Sórdido",
+    "definicao": "Sujo, imundo; no sentido figurado, moralmente repugnante."
+  },
+  {
+    "palavra": "Tênue",
+    "definicao": "Fraco, sutil, quase imperceptível."
+  },
+  {
+    "palavra": "Voraz",
+    "definicao": "Que come com muita avidez; ávido, insaciável."
+  },
+  {
+    "palavra": "Altruísta",
+    "definicao": "Que se preocupa com o bem-estar dos outros mais do que consigo."
+  },
+  {
+    "palavra": "Benevolente",
+    "definicao": "Que tem boa vontade e bondade para com os outros."
+  },
+  {
+    "palavra": "Cismar",
+    "definicao": "Ficar pensativo, matutando sobre algo com insistência."
+  },
+  {
+    "palavra": "Dissonante",
+    "definicao": "Que não está em harmonia; desafinado ou destoante."
+  },
+  {
+    "palavra": "Estoico",
+    "definicao": "Que suporta as dificuldades sem se abalar; controlado emocionalmente."
+  },
+  {
+    "palavra": "Fleugma",
+    "definicao": "Calma e serenidade diante de situações difíceis."
+  },
+  {
+    "palavra": "Grandiloquente",
+    "definicao": "Que fala de forma pomposa e exagerada."
+  },
+  {
+    "palavra": "Hesitante",
+    "definicao": "Que demonstra dúvida ou indecisão."
+  },
+  {
+    "palavra": "Imutável",
+    "definicao": "Que não muda; permanente, constante."
+  },
+  {
+    "palavra": "Jubiloso",
+    "definicao": "Muito alegre, cheio de júbilo."
+  },
+  {
+    "palavra": "Loquaz",
+    "definicao": "Que fala muito e com facilidade; falante."
+  },
+  {
+    "palavra": "Malevolente",
+    "definicao": "Que deseja o mal aos outros."
+  },
+  {
+    "palavra": "Nômade",
+    "definicao": "Que não tem moradia fixa; que se desloca constantemente."
+  },
+  {
+    "palavra": "Onipresente",
+    "definicao": "Que está presente em todos os lugares."
+  },
+  {
+    "palavra": "Plausível",
+    "definicao": "Que parece verdadeiro ou aceitável; razoável."
+  },
+  {
+    "palavra": "Quixotesco",
+    "definicao": "Idealista de forma exagerada e pouco prática."
+  },
+  {
+    "palavra": "Reticente",
+    "definicao": "Que hesita em dizer algo; que fala com reservas."
+  },
+  {
+    "palavra": "Suntuoso",
+    "definicao": "Luxuoso, magnífico, muito rico em aparência."
+  },
+  {
+    "palavra": "Transitório",
+    "definicao": "Que dura pouco tempo; passageiro, temporário."
+  },
+  {
+    "palavra": "Veemente",
+    "definicao": "Que se expressa com força e intensidade."
+  },
+  {
+    "palavra": "Zombeteiro",
+    "definicao": "Que faz zombaria; que ridiculariza os outros."
+  },
+  {
+    "palavra": "Anacrônico",
+    "definicao": "Que está fora da época; desatualizado."
+  },
+  {
+    "palavra": "Beligerante",
+    "definicao": "Que está em guerra ou tende ao conflito."
+  },
+  {
+    "palavra": "Circunspecto",
+    "definicao": "Cauteloso, prudente, que pensa antes de agir."
+  },
+  {
+    "palavra": "Desidioso",
+    "definicao": "Preguiçoso, negligente com as obrigações."
+  },
+  {
+    "palavra": "Enigmático",
+    "definicao": "Misterioso, difícil de entender ou explicar."
+  },
+  {
+    "palavra": "Frugal",
+    "definicao": "Simples e moderado, especialmente em relação à comida ou gastos."
+  },
+  {
+    "palavra": "Gárrulo",
+    "definicao": "Que fala muito e sem parar; tagarela."
+  },
+  {
+    "palavra": "Hialino",
+    "definicao": "Transparente como o vidro; cristalino."
+  },
+  {
+    "palavra": "Impávido",
+    "definicao": "Que não sente medo; corajoso diante do perigo."
+  },
+  {
+    "palavra": "Ladino",
+    "definicao": "Esperto, astuto, manhoso."
+  },
+  {
+    "palavra": "Magnânimo",
+    "definicao": "Generoso, nobre de espírito; que perdoa com facilidade."
+  },
+  {
+    "palavra": "Néscio",
+    "definicao": "Ignorante, que não tem conhecimento; tolo."
+  },
+  {
+    "palavra": "Ostensivo",
+    "definicao": "Que é feito às claras, sem se esconder; evidente."
+  },
+  {
+    "palavra": "Prosaico",
+    "definicao": "Comum, sem originalidade ou encanto; do dia a dia."
+  },
+  {
+    "palavra": "Reverente",
+    "definicao": "Que demonstra respeito e admiração profunda."
+  },
+  {
+    "palavra": "Soturno",
+    "definicao": "Sombrio, triste, de humor taciturno."
+  },
+  {
+    "palavra": "Trivial",
+    "definicao": "Comum, sem importância; corriqueiro."
+  },
+  {
+    "palavra": "Vagaroso",
+    "definicao": "Que se move devagar; lento."
+  },
+  {
+    "palavra": "Abúlico",
+    "definicao": "Que não tem vontade ou iniciativa própria."
+  },
+  {
+    "palavra": "Cismático",
+    "definicao": "Que provoca divisão ou discórdia entre grupos."
+  },
+  {
+    "palavra": "Dúctil",
+    "definicao": "Fácil de moldar ou influenciar; maleável."
+  },
+  {
+    "palavra": "Exógeno",
+    "definicao": "Que se origina fora do próprio organismo ou sistema."
+  },
+  {
+    "palavra": "Falaz",
+    "definicao": "Enganoso, que engana ou ilude."
+  },
+  {
+    "palavra": "Gnômico",
+    "definicao": "Relativo a provérbios ou máximas de sabedoria."
+  },
+  {
+    "palavra": "Hidrófobo",
+    "definicao": "Que tem medo ou aversão à água."
+  },
+  {
+    "palavra": "Iníquo",
+    "definicao": "Injusto, desonesto; contrário à justiça."
+  },
+  {
+    "palavra": "Jocundo",
+    "definicao": "Alegre, divertido; que traz contentamento."
+  },
+  {
+    "palavra": "Lascivo",
+    "definicao": "Que demonstra desejo sensual exagerado."
+  },
+  {
+    "palavra": "Mendaz",
+    "definicao": "Que mente com frequência; mentiroso."
+  }
+]
