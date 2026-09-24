@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jogos do Almoço</title>
+    <style>
+      :root {
+        --bg: #0b1020;
+        --panel: #151d31;
+        --panel-2: #1d2942;
+        --primary: #7c9cff;
+        --accent: #77e6b3;
+        --text: #edf3ff;
+        --muted: #9bb0d1;
+        --danger: #ff6b7a;
+        --gold: #ffd166;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(180deg, #0b1020 0%, #0f172a 100%);
+        color: var(--text);
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      .app {
+        width: 100%;
+        max-width: 460px;
+        min-height: 100vh;
+        padding: 24px 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .screen {
+        width: 100%;
+        background: rgba(21, 29, 49, 0.96);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+        padding: 24px 18px;
+      }
+
+      [data-tela] { display: none; }
+      [data-tela].active { display: block; }
+
+      h1, h2, h3, p { margin-top: 0; }
+      .titulo { font-size: 1.9rem; margin-bottom: 8px; text-align: center; }
+      .subtitulo { text-align: center; color: var(--muted); margin-bottom: 20px; }
+
+      .campo { display: flex; flex-direction: column; margin-bottom: 16px; }
+      label { font-size: 0.85rem; color: var(--muted); margin-bottom: 8px; }
+
+      input, textarea {
+        width: 100%;
+        background: var(--panel-2);
+        color: var(--text);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 14px 12px;
+        font-size: 1rem;
+        outline: none;
+        font-family: inherit;
+      }
+      input:focus, textarea:focus { border-color: var(--primary); }
+
+      button {
+        width: 100%;
+        border: none;
+        border-radius: 12px;
+        padding: 14px 16px;
+        background: linear-gradient(135deg, var(--primary), #8d7cff);
+        color: white;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.15s ease, opacity 0.15s ease;
+        margin-bottom: 10px;
+      }
+      button:last-child { margin-bottom: 0; }
+      button:active { transform: scale(0.98); }
+      button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+      .btn-secondary {
+        background: rgba(119, 230, 179, 0.15);
+        color: var(--accent);
+        border: 1px solid rgba(119, 230, 179, 0.2);
+      }
+      .btn-danger {
+        background: rgba(255, 107, 122, 0.15);
+        color: var(--danger);
+        border: 1px solid rgba(255, 107, 122, 0.25);
+      }
+      .btn-hidden { display: none; }
+
+      .status { margin-top: 14px; color: var(--muted); font-size: 0.9rem; min-height: 20px; text-align: center; }
+      .error { color: var(--danger); min-height: 20px; margin-top: 10px; font-size: 0.9rem; text-align: center; }
+
+      .btn-sair-sala, .btn-regras {
+        position: fixed;
+        top: 14px;
+        width: auto;
+        padding: 8px 14px;
+        font-size: 0.78rem;
+        z-index: 20;
+        margin-bottom: 0;
+      }
+      .btn-sair-sala {
+        right: 14px;
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--muted);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .btn-regras {
+        left: 14px;
+        background: rgba(124, 156, 255, 0.15);
+        color: var(--primary);
+        border: 1px solid rgba(124, 156, 255, 0.25);
+      }
+
+      /* ---------- LOBBY ---------- */
+      .sala-codigo-row {
+        display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px;
+      }
+      .btn-copiar { width: auto; padding: 8px 14px; font-size: 0.8rem; margin-bottom: 0; }
+
+      .lista-jogadores { list-style: none; padding: 0; margin: 14px 0; display: flex; flex-direction: column; gap: 8px; }
+      .lista-jogadores li {
+        background: var(--panel-2); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 10px;
+        padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; font-size: 0.92rem;
+      }
+      .lista-jogadores .pontos-mini { color: var(--gold); font-weight: 700; font-size: 0.85rem; }
+
+      .modos-grid { display: flex; flex-direction: column; gap: 12px; margin: 16px 0; }
+      .modo-card {
+        background: var(--panel-2); border: 2px solid rgba(255, 255, 255, 0.08); border-radius: 14px;
+        padding: 16px; cursor: pointer; text-align: left; transition: border-color 0.15s ease;
+      }
+      .modo-card:hover { border-color: rgba(124, 156, 255, 0.4); }
+      .modo-card.selecionado { border-color: var(--primary); background: rgba(124, 156, 255, 0.1); }
+      .modo-card .modo-titulo { font-size: 1.05rem; font-weight: 700; margin-bottom: 4px; }
+      .modo-card .modo-desc { color: var(--muted); font-size: 0.82rem; line-height: 1.4; }
+      .modo-card .modo-min { color: var(--muted); font-size: 0.72rem; margin-top: 6px; }
+
+      /* ---------- TIMER / TURNO ---------- */
+      .timer-box { text-align: center; margin: 8px 0 18px; }
+      .timer-numero { font-size: 3rem; font-weight: 700; color: var(--accent); line-height: 1; }
+      .timer-numero.aviso { color: #ffc107; }
+      .timer-numero.critico { color: var(--danger); animation: pulso 0.6s infinite; }
+      @keyframes pulso { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+      /* ---------- ESPIÃO ---------- */
+      .papel-box {
+        background: var(--panel-2); border-radius: 14px; padding: 18px; margin-bottom: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.06); text-align: center;
+      }
+      .papel-box.espiao { border-color: rgba(255, 107, 122, 0.4); background: rgba(255, 107, 122, 0.08); }
+      .label-mini { color: var(--muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+      .valor-grande { font-size: 1.4rem; font-weight: 700; }
+
+      .locais-possiveis { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 12px; }
+      .locais-possiveis span {
+        background: rgba(255, 255, 255, 0.06); border-radius: 8px; padding: 4px 8px; font-size: 0.75rem; color: var(--muted);
+      }
+
+      .lista-votar { list-style: none; padding: 0; margin: 12px 0; display: flex; flex-direction: column; gap: 8px; }
+      .lista-votar li button {
+        display: flex; justify-content: space-between; align-items: center; text-align: left;
+        background: var(--panel-2); color: var(--text); border: 1px solid rgba(255, 255, 255, 0.08); font-weight: normal;
+      }
+      .lista-votar li button.votado { border-color: var(--primary); background: rgba(124, 156, 255, 0.15); }
+
+      .resultado-box {
+        text-align: center; padding: 16px; border-radius: 14px; margin: 12px 0;
+        background: rgba(119, 230, 179, 0.1); border: 1px solid rgba(119, 230, 179, 0.25);
+      }
+      .resultado-box.espiao-venceu { background: rgba(255, 107, 122, 0.1); border-color: rgba(255, 107, 122, 0.25); }
+
+      .votos-lista { list-style: none; padding: 0; margin: 10px 0; font-size: 0.82rem; color: var(--muted); }
+      .votos-lista li { padding: 3px 0; }
+
+      /* ---------- BOMBA ---------- */
+      .fragmento-box {
+        text-align: center; background: rgba(124, 156, 255, 0.12); border: 2px solid rgba(124, 156, 255, 0.3);
+        border-radius: 16px; padding: 20px; margin-bottom: 16px;
+      }
+      .fragmento-texto { font-size: 2.4rem; font-weight: 800; letter-spacing: 0.05em; }
+
+      .vidas-lista { list-style: none; padding: 0; margin: 10px 0 16px; display: flex; flex-direction: column; gap: 6px; }
+      .vidas-lista li {
+        display: flex; justify-content: space-between; align-items: center; background: var(--panel-2);
+        border-radius: 8px; padding: 8px 12px; font-size: 0.85rem;
+      }
+      .vidas-lista li.na-vez { border: 1px solid var(--accent); }
+      .vidas-lista li.eliminado { opacity: 0.4; }
+
+      .historico-bomba { list-style: none; padding: 0; margin: 10px 0; max-height: 110px; overflow-y: auto; font-size: 0.8rem; color: var(--muted); }
+      .historico-bomba li { padding: 2px 0; }
+
+      /* ---------- DEFINIÇÃO FALSA ---------- */
+      .palavra-destaque { text-align: center; font-size: 2rem; font-weight: 800; margin: 10px 0 18px; color: var(--primary); }
+
+      /* ---------- FIM DE RODADA / RANKING ---------- */
+      .lista-pontos { list-style: none; padding: 0; margin: 16px 0; display: flex; flex-direction: column; gap: 8px; }
+      .lista-pontos li {
+        background: var(--panel-2); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 10px;
+        padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem;
+      }
+      .medalha { margin-right: 6px; }
+
+      /* ---------- MODAL DE REGRAS ---------- */
+      .modal-fundo {
+        display: none; position: fixed; inset: 0; background: rgba(5, 8, 16, 0.75); z-index: 50;
+        align-items: center; justify-content: center; padding: 18px;
+      }
+      .modal-fundo.aberto { display: flex; }
+      .modal-caixa {
+        width: 100%; max-width: 440px; max-height: 85vh; overflow-y: auto; background: var(--panel);
+        border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 18px; padding: 22px 20px;
+      }
+      .modal-caixa h2 { text-align: center; }
+      .modal-caixa h3 { color: var(--primary); font-size: 1rem; margin-bottom: 6px; }
+      .modal-caixa p, .modal-caixa li { color: var(--muted); font-size: 0.86rem; line-height: 1.5; }
+      .modal-caixa ul { padding-left: 18px; margin-top: 4px; }
+      .modal-secao { margin-bottom: 18px; }
+      .abas-regras { display: flex; gap: 6px; margin-bottom: 16px; }
+      .abas-regras button { padding: 8px; font-size: 0.78rem; }
+      .aba-conteudo { display: none; }
+      .aba-conteudo.active { display: block; }
+    </style>
+  </head>
+  <body>
+    <button id="btnSairSala" class="btn-sair-sala" type="button" style="display: none;">🚪 Sair</button>
+    <button id="btnRegras" class="btn-regras" type="button">❓ Regras</button>
+
+    <main class="app">
+      <!-- LOGIN -->
+      <section class="screen" data-tela="login">
+        <h1 class="titulo">🎲 Jogos do Almoço</h1>
+        <p class="subtitulo">Entre em uma sala e escolha o jogo.</p>
+        <div class="campo">
+          <label for="nome">Nome</label>
+          <input id="nome" type="text" maxlength="20" placeholder="Seu nome" />
+        </div>
+        <div class="campo">
+          <label for="codigoSala">Código da Sala</label>
+          <input id="codigoSala" type="text" maxlength="4" placeholder="ABCD" />
+        </div>
+        <button id="btnEntrar" type="button">Entrar</button>
+        <div id="erroLogin" class="error"></div>
+      </section>
+
+      <!-- LOBBY -->
+      <section class="screen" data-tela="lobby">
+        <h2 style="text-align:center;">Sala</h2>
+        <div class="sala-codigo-row">
+          <span id="codigoSalaLobby" style="font-size: 1.6rem; font-weight: 700;">-</span>
+          <button id="btnCopiarCodigo" type="button" class="btn-secondary btn-copiar">Copiar código</button>
+        </div>
+        <p class="subtitulo">Jogadores na sala</p>
+        <ul id="listaJogadores" class="lista-jogadores"></ul>
+
+        <div id="areaEscolherModo">
+          <p class="subtitulo" style="margin-bottom:8px;">Escolha o jogo</p>
+          <div class="modos-grid">
+            <div class="modo-card" data-modo="ESPIAO">
+              <div class="modo-titulo">🕵️ Espião entre Nós</div>
+              <div class="modo-desc">Todo mundo sabe o local secreto, menos o espião. Façam perguntas e descubram quem não sabe de nada.</div>
+              <div class="modo-min">Mínimo 3 jogadores</div>
+            </div>
+            <div class="modo-card" data-modo="BOMBA">
+              <div class="modo-titulo">💣 Bomba de Palavras</div>
+              <div class="modo-desc">Aparece um pedaço de palavra. Na sua vez, digite rápido uma palavra que contenha esse trecho antes do tempo acabar.</div>
+              <div class="modo-min">Mínimo 2 jogadores</div>
+            </div>
+            <div class="modo-card" data-modo="DEFINICAO">
+              <div class="modo-titulo">📖 Definição Falsa</div>
+              <div class="modo-desc">Aparece uma palavra difícil de verdade. Invente uma definição convincente e tente enganar a galera.</div>
+              <div class="modo-min">Mínimo 3 jogadores</div>
+            </div>
+          </div>
+        </div>
+
+        <button id="btnIniciarModo" class="btn-hidden" type="button">Iniciar</button>
+        <div id="statusLobby" class="status"></div>
+      </section>
+
+      <!-- ESPIÃO: RODADA -->
+      <section class="screen" data-tela="espiao-rodada">
+        <h2 style="text-align:center;">🕵️ Espião entre Nós</h2>
+        <div class="timer-box"><div id="timerEspiaoRodada" class="timer-numero">-</div></div>
+
+        <div id="espiaoBoxNaoEspiao" class="papel-box">
+          <div class="label-mini">Local</div>
+          <div id="espiaoLocal" class="valor-grande">-</div>
+          <div class="label-mini" style="margin-top:14px;">Seu papel lá</div>
+          <div id="espiaoPapel" class="valor-grande">-</div>
+        </div>
+
+        <div id="espiaoBoxEspiao" class="papel-box espiao">
+          <div class="valor-grande">🕵️ Você é o Espião!</div>
+          <p style="color:var(--muted); font-size:0.85rem;">Tente descobrir o local sem ser pego. Locais possíveis:</p>
+          <div id="espiaoListaLocais" class="locais-possiveis"></div>
+        </div>
+
+        <button id="btnEspiaoChamarVotacao" type="button" class="btn-secondary">🔍 Chamar Votação</button>
+
+        <div id="espiaoAreaAdivinhar" style="display:none; margin-top: 14px;">
+          <div class="campo">
+            <label for="espiaoSelectLocal">Espião: tentar adivinhar o local</label>
+            <select id="espiaoSelectLocal" style="width:100%; background: var(--panel-2); color: var(--text); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px;"></select>
+          </div>
+          <button id="btnEspiaoAdivinhar" type="button" class="btn-danger">Arriscar Palpite</button>
+        </div>
+
+        <button id="btnCancelarModo1" type="button" class="btn-secondary" style="margin-top:14px; display:none;">Cancelar / Voltar ao Lobby</button>
+      </section>
+
+      <!-- ESPIÃO: VOTAÇÃO -->
+      <section class="screen" data-tela="espiao-votacao">
+        <h2 style="text-align:center;">🗳️ Quem é o Espião?</h2>
+        <div class="timer-box"><div id="timerEspiaoVotacao" class="timer-numero">-</div></div>
+        <div id="espiaoStatusVotos" class="status"></div>
+        <ul id="espiaoListaVotar" class="lista-votar"></ul>
+      </section>
+
+      <!-- ESPIÃO: RESULTADO -->
+      <section class="screen" data-tela="espiao-resultado">
+        <h2 style="text-align:center;">Resultado</h2>
+        <div id="espiaoResultadoBox" class="resultado-box">
+          <div id="espiaoResultadoTexto" class="valor-grande">-</div>
+        </div>
+        <div class="papel-box">
+          <div class="label-mini">Local era</div>
+          <div id="espiaoResultadoLocal" class="valor-grande">-</div>
+          <div class="label-mini" style="margin-top:10px;">O Espião era</div>
+          <div id="espiaoResultadoNome" class="valor-grande">-</div>
+        </div>
+        <ul id="espiaoResultadoVotos" class="votos-lista"></ul>
+        <ul id="espiaoRankingRodada" class="lista-pontos"></ul>
+        <div id="espiaoAcoesHost" style="display:none;">
+          <button id="btnEspiaoNovaRodada" type="button">🔁 Nova Rodada</button>
+          <button id="btnEspiaoVoltarLobby" type="button" class="btn-secondary">🏠 Trocar de Jogo</button>
+        </div>
+        <div id="espiaoStatusFim" class="status"></div>
+      </section>
+
+      <!-- BOMBA: RODADA -->
+      <section class="screen" data-tela="bomba-rodada">
+        <h2 style="text-align:center;">💣 Bomba de Palavras</h2>
+        <div class="timer-box"><div id="timerBomba" class="timer-numero">-</div></div>
+
+        <div class="fragmento-box">
+          <div class="label-mini">Contém</div>
+          <div id="bombaFragmento" class="fragmento-texto">-</div>
+        </div>
+
+        <div id="bombaVezStatus" class="status" style="font-weight:700; color: var(--accent);"></div>
+
+        <ul id="bombaVidasLista" class="vidas-lista"></ul>
+
+        <div id="bombaAreaResponder" style="display:none;">
+          <div class="campo">
+            <input id="bombaInputPalavra" type="text" placeholder="Digite uma palavra..." autocomplete="off" />
+          </div>
+          <button id="btnBombaResponder" type="button">Enviar</button>
+        </div>
+        <div id="bombaErro" class="error"></div>
+
+        <div class="label-mini" style="margin-top:14px;">Últimas palavras</div>
+        <ul id="bombaHistorico" class="historico-bomba"></ul>
+
+        <button id="btnCancelarModo2" type="button" class="btn-secondary" style="margin-top:14px; display:none;">Cancelar / Voltar ao Lobby</button>
+      </section>
+
+      <!-- BOMBA: RESULTADO -->
+      <section class="screen" data-tela="bomba-resultado">
+        <h2 style="text-align:center;">💥 Fim da Rodada!</h2>
+        <div class="resultado-box">
+          <div class="label-mini">Vencedor(a)</div>
+          <div id="bombaVencedorNome" class="valor-grande">-</div>
+        </div>
+        <ul id="bombaRankingRodada" class="lista-pontos"></ul>
+        <div id="bombaAcoesHost" style="display:none;">
+          <button id="btnBombaNovaRodada" type="button">🔁 Nova Rodada</button>
+          <button id="btnBombaVoltarLobby" type="button" class="btn-secondary">🏠 Trocar de Jogo</button>
+        </div>
+        <div id="bombaStatusFim" class="status"></div>
+      </section>
+
+      <!-- DEFINIÇÃO: ESCREVER -->
+      <section class="screen" data-tela="def-escrever">
+        <h2 style="text-align:center;">📖 Definição Falsa</h2>
+        <div class="timer-box"><div id="timerDefEscrever" class="timer-numero">-</div></div>
+        <p class="subtitulo">Invente uma definição convincente pra esta palavra:</p>
+        <div class="palavra-destaque" id="defPalavra">-</div>
+
+        <div id="defAreaEscrever">
+          <div class="campo">
+            <textarea id="defInputTexto" rows="3" maxlength="200" placeholder="Sua definição inventada..."></textarea>
+          </div>
+          <button id="btnDefSubmeter" type="button">Enviar Definição</button>
+        </div>
+        <div id="defStatusEscrever" class="status"></div>
+
+        <button id="btnCancelarModo3" type="button" class="btn-secondary" style="margin-top:14px; display:none;">Cancelar / Voltar ao Lobby</button>
+      </section>
+
+      <!-- DEFINIÇÃO: VOTAR -->
+      <section class="screen" data-tela="def-votar">
+        <h2 style="text-align:center;">🗳️ Qual é a definição real?</h2>
+        <div class="timer-box"><div id="timerDefVotar" class="timer-numero">-</div></div>
+        <div class="palavra-destaque" id="defPalavraVotar">-</div>
+        <div id="defStatusVotos" class="status"></div>
+        <ul id="defListaOpcoes" class="lista-votar"></ul>
+      </section>
+
+      <!-- DEFINIÇÃO: RESULTADO -->
+      <section class="screen" data-tela="def-resultado">
+        <h2 style="text-align:center;">Resultado</h2>
+        <div class="palavra-destaque" id="defResultadoPalavra">-</div>
+        <div class="papel-box">
+          <div class="label-mini">Definição real</div>
+          <div id="defResultadoReal" style="font-size:1rem;">-</div>
+        </div>
+        <ul id="defResultadoOpcoes" class="lista-votar"></ul>
+        <ul id="defRankingRodada" class="lista-pontos"></ul>
+        <div id="defAcoesHost" style="display:none;">
+          <button id="btnDefNovaRodada" type="button">🔁 Próxima Palavra</button>
+          <button id="btnDefVoltarLobby" type="button" class="btn-secondary">🏠 Trocar de Jogo</button>
+        </div>
+        <div id="defStatusFim" class="status"></div>
+      </section>
+    </main>
+
+    <!-- MODAL DE REGRAS -->
+    <div id="modalRegras" class="modal-fundo">
+      <div class="modal-caixa">
+        <h2>❓ Como Jogar</h2>
+        <div class="abas-regras">
+          <button type="button" class="btn-secondary aba-btn" data-aba="espiao">🕵️ Espião</button>
+          <button type="button" class="btn-secondary aba-btn" data-aba="bomba">💣 Bomba</button>
+          <button type="button" class="btn-secondary aba-btn" data-aba="def">📖 Definição</button>
+        </div>
+
+        <div class="aba-conteudo" data-aba-conteudo="espiao">
+          <div class="modal-secao">
+            <h3>Objetivo</h3>
+            <p>Todo mundo recebe um local secreto e um papel dentro dele — menos o Espião, que não sabe de nada.</p>
+          </div>
+          <div class="modal-secao">
+            <h3>Como jogar</h3>
+            <ul>
+              <li>Façam perguntas em voz alta uns aos outros sobre o local, tentando descobrir quem é o Espião sem revelar o local pra ele.</li>
+              <li>O Espião tenta se disfarçar e, se possível, adivinhar o local pelas respostas.</li>
+              <li>A qualquer momento, alguém pode tocar "🔍 Chamar Votação".</li>
+              <li>Todo mundo vota em quem acha que é o Espião (ou se abstém).</li>
+            </ul>
+          </div>
+          <div class="modal-secao">
+            <h3>Pontuação</h3>
+            <ul>
+              <li>Se o mais votado for o Espião: todos os outros ganham 2 pontos.</li>
+              <li>Se o Espião escapar da votação: ele ganha 4 pontos.</li>
+              <li>Se o Espião arriscar e acertar o local: ganha 5 pontos na hora.</li>
+              <li>Se arriscar e errar: perde a chance, e os outros ganham 2 pontos.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="aba-conteudo" data-aba-conteudo="bomba">
+          <div class="modal-secao">
+            <h3>Objetivo</h3>
+            <p>Na sua vez, digite uma palavra que contenha o trecho mostrado na tela antes do tempo acabar.</p>
+          </div>
+          <div class="modal-secao">
+            <h3>Como jogar</h3>
+            <ul>
+              <li>O jogo mostra um pedaço de palavra (ex: "TRA") e passa a vez em círculo.</li>
+              <li>Quem está na vez tem poucos segundos pra digitar uma palavra válida com esse trecho.</li>
+              <li>Palavra certa: ganha 1 ponto e passa a vez, com um trecho novo.</li>
+              <li>Tempo esgotado: perde 1 vida (começa com 3). Zerou as vidas, está eliminado da rodada.</li>
+              <li>Último jogador de pé vence a rodada e ganha um bônus.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="aba-conteudo" data-aba-conteudo="def">
+          <div class="modal-secao">
+            <h3>Objetivo</h3>
+            <p>Uma palavra difícil aparece pra todo mundo. Cada um escreve uma definição falsa convincente.</p>
+          </div>
+          <div class="modal-secao">
+            <h3>Como jogar</h3>
+            <ul>
+              <li>Escreva uma definição que pareça real (mas não é).</li>
+              <li>Depois, todas as definições — incluindo a verdadeira — aparecem embaralhadas e sem autor.</li>
+              <li>Vote em qual você acha que é a definição real de verdade.</li>
+            </ul>
+          </div>
+          <div class="modal-secao">
+            <h3>Pontuação</h3>
+            <ul>
+              <li>Acertou a definição real: +2 pontos.</li>
+              <li>Alguém votou na SUA definição falsa (achando que era real): +1 ponto pra você, por cada voto.</li>
+            </ul>
+          </div>
+        </div>
+
+        <button id="btnFecharRegras" type="button" class="btn-secondary" style="margin-top:8px;">Entendi, fechar</button>
+      </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+      const socket = io();
+
+      let codigoSala = '';
+      let nomeJogador = '';
+      let salaAtual = null;
+      let estadoPrivado = { espiao: null, definicao: null };
+      let modoSelecionadoLobby = null;
+      let timerAtivo = null;
+      let botaoBombaHabilitado = true;
+
+      let usuarioId = localStorage.getItem('usuario_id');
+      if (!usuarioId) {
+        usuarioId = (crypto.randomUUID && crypto.randomUUID())
+          || `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        localStorage.setItem('usuario_id', usuarioId);
+      }
+
+      // ---------- Utilidades de tela ----------
+      function mostrarTela(nome) {
+        document.querySelectorAll('[data-tela]').forEach((el) => {
+          el.classList.toggle('active', el.dataset.tela === nome);
+        });
+        document.getElementById('btnSairSala').style.display = nome === 'login' ? 'none' : 'block';
+      }
+
+      function limparTimer() {
+        if (timerAtivo) { clearInterval(timerAtivo); timerAtivo = null; }
+      }
+
+      function iniciarTimer(elementoId, tempoInicio, duracao, aoZerar) {
+        limparTimer();
+        const el = document.getElementById(elementoId);
+        if (!el) return;
+        const inicio = Number(tempoInicio) || Math.floor(Date.now() / 1000);
+        let disparou = false;
+
+        function atualizar() {
+          const restante = Math.max(0, duracao - Math.floor(Date.now() / 1000 - inicio));
+          el.textContent = String(restante);
+          el.classList.remove('aviso', 'critico');
+          if (restante <= 3) el.classList.add('critico');
+          else if (restante <= 8) el.classList.add('aviso');
+          if (restante <= 0 && !disparou) {
+            disparou = true;
+            clearInterval(timerAtivo);
+            timerAtivo = null;
+            if (aoZerar) aoZerar();
+          }
+        }
+        atualizar();
+        timerAtivo = setInterval(atualizar, 1000);
+      }
+
+      function encontrarMeuJogador(sala) {
+        if (!sala || !Array.isArray(sala.jogadores)) return null;
+        return sala.jogadores.find((j) => j.usuario_id && j.usuario_id === usuarioId)
+          || sala.jogadores.find((j) => j.sid === socket.id)
+          || null;
+      }
+
+      function souHost(sala) {
+        const meu = encontrarMeuJogador(sala);
+        return !!(meu && sala.jogadores.length > 0 && sala.jogadores[0].usuario_id === meu.usuario_id);
+      }
+
+      function nomeDoJogador(sala, identificador) {
+        const jogador = (sala.jogadores || []).find((j) => j.usuario_id === identificador || j.sid === identificador);
+        return jogador ? jogador.nome : '?';
+      }
+
+      // ---------- LOGIN ----------
+      document.getElementById('btnEntrar').addEventListener('click', () => {
+        nomeJogador = document.getElementById('nome').value.trim();
+        codigoSala = document.getElementById('codigoSala').value.trim().toUpperCase();
+        const erroLogin = document.getElementById('erroLogin');
+        if (!nomeJogador || !codigoSala) {
+          erroLogin.textContent = 'Informe nome e código da sala.';
+          return;
+        }
+        erroLogin.textContent = '';
+        localStorage.setItem('codigoSala', codigoSala);
+        localStorage.setItem('nomeJogador', nomeJogador);
+        socket.emit('join_game', { nome: nomeJogador, codigo: codigoSala, usuario_id: usuarioId });
+      });
+
+      document.getElementById('codigoSala').addEventListener('input', (e) => {
+        e.target.value = e.target.value.replace(/[^a-zA-Z]/g, '').slice(0, 4).toUpperCase();
+      });
+
+      document.getElementById('btnCopiarCodigo').addEventListener('click', () => {
+        const codigo = document.getElementById('codigoSalaLobby').textContent || '';
+        if (!codigo || codigo === '-') return;
+        const btn = document.getElementById('btnCopiarCodigo');
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(codigo).then(() => {
+            const original = btn.textContent;
+            btn.textContent = 'Copiado! ✓';
+            setTimeout(() => { btn.textContent = original; }, 1500);
+          }).catch(() => {});
+        }
+      });
+
+      document.getElementById('btnSairSala').addEventListener('click', () => {
+        if (!confirm('Sair desta sala?')) return;
+        if (codigoSala) socket.emit('sair_sala', { codigo: codigoSala });
+        limparTimer();
+        salaAtual = null;
+        codigoSala = '';
+        localStorage.removeItem('codigoSala');
+        localStorage.removeItem('nomeJogador');
+        document.getElementById('codigoSala').value = '';
+        mostrarTela('login');
+      });
+
+      // ---------- MODAL DE REGRAS ----------
+      const modalRegras = document.getElementById('modalRegras');
+      document.getElementById('btnRegras').addEventListener('click', () => {
+        modalRegras.classList.add('aberto');
+      });
+      document.getElementById('btnFecharRegras').addEventListener('click', () => {
+        modalRegras.classList.remove('aberto');
+      });
+      modalRegras.addEventListener('click', (e) => {
+        if (e.target === modalRegras) modalRegras.classList.remove('aberto');
+      });
+      document.querySelectorAll('.aba-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.aba-btn').forEach((b) => b.classList.remove('selecionado'));
+          btn.classList.add('selecionado');
+          const aba = btn.dataset.aba;
+          document.querySelectorAll('[data-aba-conteudo]').forEach((el) => {
+            el.classList.toggle('active', el.dataset.abaConteudo === aba);
+          });
+        });
+      });
+      document.querySelector('.aba-btn').click();
+
+      // ---------- LOBBY: escolha de modo ----------
+      document.querySelectorAll('.modo-card').forEach((card) => {
+        card.addEventListener('click', () => {
+          if (!salaAtual || !souHost(salaAtual)) return;
+          socket.emit('escolher_modo', { codigo: codigoSala, modo: card.dataset.modo });
+        });
+      });
+
+      document.getElementById('btnIniciarModo').addEventListener('click', () => {
+        socket.emit('iniciar_modo', { codigo: codigoSala });
+      });
+
+      function renderizarLobby(sala) {
+        document.getElementById('codigoSalaLobby').textContent = sala.codigo || codigoSala;
+
+        const lista = document.getElementById('listaJogadores');
+        lista.innerHTML = '';
+        [...(sala.jogadores || [])].sort((a, b) => (b.pontuacao || 0) - (a.pontuacao || 0)).forEach((j) => {
+          const li = document.createElement('li');
+          const offline = j.status === 'offline' || j.status === 'saiu';
+          li.innerHTML = `<span style="${offline ? 'opacity:0.5;' : ''}">${j.nome}${offline ? ' (fora)' : ''}</span><span class="pontos-mini">${j.pontuacao || 0} pts</span>`;
+          lista.appendChild(li);
+        });
+
+        const host = souHost(sala);
+        const ativos = (sala.jogadores || []).filter((j) => j.status !== 'offline' && j.status !== 'saiu');
+
+        document.querySelectorAll('.modo-card').forEach((card) => {
+          card.classList.toggle('selecionado', sala.modo === card.dataset.modo);
+        });
+
+        const mins = { ESPIAO: 3, BOMBA: 2, DEFINICAO: 3 };
+        const btnIniciar = document.getElementById('btnIniciarModo');
+        const statusLobby = document.getElementById('statusLobby');
+
+        if (host) {
+          btnIniciar.classList.toggle('btn-hidden', !sala.modo);
+          if (sala.modo) {
+            const minimo = mins[sala.modo] || 2;
+            btnIniciar.disabled = ativos.length < minimo;
+            statusLobby.textContent = ativos.length < minimo
+              ? `Esperando mais gente (mínimo ${minimo} jogadores ativos)...`
+              : 'Tudo pronto! Toque em Iniciar.';
+          } else {
+            statusLobby.textContent = 'Escolha um jogo acima.';
+          }
+        } else {
+          btnIniciar.classList.add('btn-hidden');
+          statusLobby.textContent = sala.modo
+            ? 'Aguardando o host iniciar...'
+            : 'Aguardando o host escolher o jogo...';
+        }
+      }
+
+      // ---------- Ações "Cancelar / Voltar ao Lobby" (host) ----------
+      ['btnCancelarModo1', 'btnCancelarModo2', 'btnCancelarModo3'].forEach((id) => {
+        document.getElementById(id).addEventListener('click', () => {
+          if (confirm('Voltar ao lobby? A rodada atual será cancelada.')) {
+            socket.emit('voltar_lobby', { codigo: codigoSala });
+          }
+        });
+      });
+      ['btnEspiaoVoltarLobby', 'btnBombaVoltarLobby', 'btnDefVoltarLobby'].forEach((id) => {
+        document.getElementById(id).addEventListener('click', () => {
+          socket.emit('voltar_lobby', { codigo: codigoSala });
+        });
+      });
+
+      function mostrarBotaoCancelar(sala) {
+        const host = souHost(sala);
+        ['btnCancelarModo1', 'btnCancelarModo2', 'btnCancelarModo3'].forEach((id) => {
+          document.getElementById(id).style.display = host ? 'block' : 'none';
+        });
+      }
+
+      function renderizarRanking(listaId, sala) {
+        const el = document.getElementById(listaId);
+        el.innerHTML = '';
+        const medalhas = ['🥇', '🥈', '🥉'];
+        [...(sala.jogadores || [])].sort((a, b) => (b.pontuacao || 0) - (a.pontuacao || 0)).forEach((j, i) => {
+          const li = document.createElement('li');
+          const medalha = j.pontuacao > 0 && i < 3 ? medalhas[i] : '';
+          li.innerHTML = `<span>${medalha ? `<span class="medalha">${medalha}</span>` : ''}${j.nome}</span><strong>${j.pontuacao || 0} pts</strong>`;
+          el.appendChild(li);
+        });
+      }
+
+      // =====================================================================
+      // ESPIÃO ENTRE NÓS
+      // =====================================================================
+      document.getElementById('btnEspiaoChamarVotacao').addEventListener('click', () => {
+        socket.emit('espiao_chamar_votacao', { codigo: codigoSala });
+      });
+
+      document.getElementById('btnEspiaoAdivinhar').addEventListener('click', () => {
+        const local = document.getElementById('espiaoSelectLocal').value;
+        if (!local) return;
+        if (!confirm(`Arriscar que o local é "${local}"? Se errar, os outros ganham pontos.`)) return;
+        socket.emit('espiao_adivinhar_local', { codigo: codigoSala, local });
+      });
+
+      document.getElementById('btnEspiaoNovaRodada').addEventListener('click', () => {
+        socket.emit('nova_rodada', { codigo: codigoSala });
+      });
+
+      function renderizarEspiaoRodada(sala) {
+        mostrarTela('espiao-rodada');
+        mostrarBotaoCancelar(sala);
+        iniciarTimer('timerEspiaoRodada', sala.tempo_inicio, sala.tempo_rodada || 480, () => {
+          socket.emit('espiao_chamar_votacao', { codigo: codigoSala });
+        });
+
+        const dadosEspiao = estadoPrivado.espiao;
+        const souEspiao = !!(dadosEspiao && dadosEspiao.sou_espiao);
+
+        document.getElementById('espiaoBoxEspiao').style.display = souEspiao ? 'block' : 'none';
+        document.getElementById('espiaoBoxNaoEspiao').style.display = souEspiao ? 'none' : 'block';
+        document.getElementById('espiaoAreaAdivinhar').style.display = souEspiao ? 'block' : 'none';
+
+        if (souEspiao && dadosEspiao.locais_possiveis) {
+          const listaEl = document.getElementById('espiaoListaLocais');
+          listaEl.innerHTML = dadosEspiao.locais_possiveis.map((l) => `<span>${l}</span>`).join('');
+          const select = document.getElementById('espiaoSelectLocal');
+          select.innerHTML = dadosEspiao.locais_possiveis
+            .map((l) => `<option value="${l}">${l}</option>`).join('');
+        } else if (dadosEspiao) {
+          document.getElementById('espiaoLocal').textContent = dadosEspiao.local || '-';
+          document.getElementById('espiaoPapel').textContent = dadosEspiao.papel || '-';
+        }
+      }
+
+      function renderizarEspiaoVotacao(sala) {
+        mostrarTela('espiao-votacao');
+        iniciarTimer('timerEspiaoVotacao', sala.tempo_inicio, sala.tempo_rodada || 45, () => {
+          // qualquer cliente pode reforçar; o servidor ignora se já foi resolvido
+          socket.emit('espiao_votar', { codigo: codigoSala, alvo_usuario_id: null });
+        });
+
+        const estado = sala.estado || {};
+        document.getElementById('espiaoStatusVotos').textContent = `${estado.total_votos || 0} de ${(sala.jogadores || []).filter(j => j.status !== 'offline' && j.status !== 'saiu').length} já votaram`;
+
+        const meu = encontrarMeuJogador(sala);
+        const lista = document.getElementById('espiaoListaVotar');
+        lista.innerHTML = '';
+        (sala.jogadores || []).filter((j) => j.status !== 'offline' && j.status !== 'saiu').forEach((j) => {
+          if (meu && j.usuario_id === meu.usuario_id) return; // não pode votar em si mesmo
+          const li = document.createElement('li');
+          const btn = document.createElement('button');
+          btn.textContent = j.nome;
+          btn.addEventListener('click', () => {
+            socket.emit('espiao_votar', { codigo: codigoSala, alvo_usuario_id: j.usuario_id });
+            document.querySelectorAll('#espiaoListaVotar button').forEach((b) => b.classList.remove('votado'));
+            btn.classList.add('votado');
+          });
+          li.appendChild(btn);
+          lista.appendChild(li);
+        });
+      }
+
+      function renderizarEspiaoResultado(sala) {
+        mostrarTela('espiao-resultado');
+        limparTimer();
+        const estado = sala.estado || {};
+
+        const textos = {
+          nao_espioes_venceram: '🎉 Pegaram o Espião!',
+          espiao_venceu: '🕵️ O Espião escapou!',
+          espiao_venceu_adivinhando: '🕵️ O Espião adivinhou o local!',
+          espiao_perdeu_adivinhando: '🎉 O Espião chutou errado!',
+        };
+        document.getElementById('espiaoResultadoTexto').textContent = textos[estado.resultado] || '-';
+        document.getElementById('espiaoResultadoBox').classList.toggle('espiao-venceu', (estado.resultado || '').includes('espiao_venceu'));
+        document.getElementById('espiaoResultadoLocal').textContent = estado.local || '-';
+        document.getElementById('espiaoResultadoNome').textContent = estado.espiao_nome || '-';
+
+        const votosEl = document.getElementById('espiaoResultadoVotos');
+        votosEl.innerHTML = '';
+        (estado.votos_detalhados || []).forEach((v) => {
+          const li = document.createElement('li');
+          li.textContent = `${v.votante_nome} votou em ${v.alvo_nome}`;
+          votosEl.appendChild(li);
+        });
+
+        renderizarRanking('espiaoRankingRodada', sala);
+
+        const host = souHost(sala);
+        document.getElementById('espiaoAcoesHost').style.display = host ? 'block' : 'none';
+        document.getElementById('espiaoStatusFim').textContent = host ? '' : 'Aguardando o host...';
+      }
+
+      // =====================================================================
+      // BOMBA DE PALAVRAS
+      // =====================================================================
+      document.getElementById('btnBombaResponder').addEventListener('click', enviarPalavraBomba);
+      document.getElementById('bombaInputPalavra').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') enviarPalavraBomba();
+      });
+      function enviarPalavraBomba() {
+        const input = document.getElementById('bombaInputPalavra');
+        const palavra = input.value.trim();
+        if (!palavra) return;
+        socket.emit('bomba_responder', { codigo: codigoSala, palavra });
+        input.value = '';
+      }
+
+      document.getElementById('btnBombaNovaRodada').addEventListener('click', () => {
+        socket.emit('nova_rodada', { codigo: codigoSala });
+      });
+
+      function renderizarBombaRodada(sala) {
+        mostrarTela('bomba-rodada');
+        mostrarBotaoCancelar(sala);
+        const estado = sala.estado || {};
+
+        iniciarTimer('timerBomba', sala.tempo_inicio, sala.tempo_rodada || 12, () => {
+          socket.emit('bomba_tempo_esgotado', { codigo: codigoSala });
+        });
+
+        document.getElementById('bombaFragmento').textContent = estado.fragmento_atual || '-';
+
+        const ordem = estado.ordem || [];
+        const indiceTurno = estado.indice_turno || 0;
+        const idDaVez = ordem[indiceTurno % (ordem.length || 1)];
+        const meu = encontrarMeuJogador(sala);
+        const ehMinhaVez = !!(meu && idDaVez === meu.usuario_id);
+
+        document.getElementById('bombaVezStatus').textContent = ehMinhaVez
+          ? '🎯 Sua vez!'
+          : `Vez de: ${nomeDoJogador(sala, idDaVez)}`;
+
+        document.getElementById('bombaAreaResponder').style.display = ehMinhaVez ? 'block' : 'none';
+        if (ehMinhaVez) document.getElementById('bombaInputPalavra').focus();
+
+        const vidasLista = document.getElementById('bombaVidasLista');
+        vidasLista.innerHTML = '';
+        ordem.forEach((id) => {
+          const jogador = (sala.jogadores || []).find((j) => j.usuario_id === id);
+          const eliminado = (estado.eliminados || []).includes(id);
+          const vidas = (estado.vidas || {})[id] || 0;
+          const li = document.createElement('li');
+          li.className = `${id === idDaVez && !eliminado ? 'na-vez' : ''} ${eliminado ? 'eliminado' : ''}`;
+          const coracoes = eliminado ? '☠️' : '❤️'.repeat(Math.max(0, vidas)) + '🖤'.repeat(Math.max(0, 3 - vidas));
+          li.innerHTML = `<span>${jogador ? jogador.nome : '?'}</span><span>${coracoes}</span>`;
+          vidasLista.appendChild(li);
+        });
+
+        const historico = document.getElementById('bombaHistorico');
+        historico.innerHTML = '';
+        [...(estado.palavras_usadas_rodada || [])].reverse().forEach((p) => {
+          const li = document.createElement('li');
+          li.textContent = p;
+          historico.appendChild(li);
+        });
+
+        document.getElementById('bombaErro').textContent = '';
+      }
+
+      function renderizarBombaResultado(sala) {
+        mostrarTela('bomba-resultado');
+        limparTimer();
+        const estado = sala.estado || {};
+        document.getElementById('bombaVencedorNome').textContent = nomeDoJogador(sala, estado.vencedor_id) || '-';
+        renderizarRanking('bombaRankingRodada', sala);
+
+        const host = souHost(sala);
+        document.getElementById('bombaAcoesHost').style.display = host ? 'block' : 'none';
+        document.getElementById('bombaStatusFim').textContent = host ? '' : 'Aguardando o host...';
+      }
+
+      // =====================================================================
+      // DEFINIÇÃO FALSA
+      // =====================================================================
+      let jaEnviouDefinicao = false;
+
+      document.getElementById('btnDefSubmeter').addEventListener('click', () => {
+        const texto = document.getElementById('defInputTexto').value.trim();
+        if (!texto) return;
+        socket.emit('def_submeter', { codigo: codigoSala, texto });
+        jaEnviouDefinicao = true;
+        atualizarStatusEscreverDef(salaAtual);
+      });
+
+      document.getElementById('btnDefNovaRodada').addEventListener('click', () => {
+        jaEnviouDefinicao = false;
+        socket.emit('nova_rodada', { codigo: codigoSala });
+      });
+
+      function atualizarStatusEscreverDef(sala) {
+        const estado = (sala && sala.estado) || {};
+        const total = (sala && sala.jogadores || []).filter(j => j.status !== 'offline' && j.status !== 'saiu').length;
+        document.getElementById('defStatusEscrever').textContent = jaEnviouDefinicao
+          ? `Definição enviada! Esperando os outros... (${estado.total_submissoes || 0}/${total})`
+          : `${estado.total_submissoes || 0} de ${total} já escreveram.`;
+        document.getElementById('defAreaEscrever').style.display = jaEnviouDefinicao ? 'none' : 'block';
+      }
+
+      function renderizarDefEscrever(sala) {
+        mostrarTela('def-escrever');
+        mostrarBotaoCancelar(sala);
+        const estado = sala.estado || {};
+        document.getElementById('defPalavra').textContent = estado.palavra || '-';
+        document.getElementById('defInputTexto').value = '';
+        atualizarStatusEscreverDef(sala);
+
+        iniciarTimer('timerDefEscrever', sala.tempo_inicio, sala.tempo_rodada || 75, () => {
+          socket.emit('def_tempo_escrever', { codigo: codigoSala });
+        });
+      }
+
+      function renderizarDefVotar(sala) {
+        mostrarTela('def-votar');
+        const estado = sala.estado || {};
+        document.getElementById('defPalavraVotar').textContent = estado.palavra || '-';
+        document.getElementById('defStatusVotos').textContent = `${estado.total_votos || 0} já votaram`;
+
+        iniciarTimer('timerDefVotar', sala.tempo_inicio, sala.tempo_rodada || 45, () => {
+          socket.emit('def_tempo_votar', { codigo: codigoSala });
+        });
+
+        const minhaPosicao = estadoPrivado.definicao ? estadoPrivado.definicao.minha_posicao : null;
+        const lista = document.getElementById('defListaOpcoes');
+        lista.innerHTML = '';
+        (estado.opcoes || []).forEach((op, indice) => {
+          if (indice === minhaPosicao) return; // não pode votar na própria
+          const li = document.createElement('li');
+          const btn = document.createElement('button');
+          btn.textContent = op.texto;
+          btn.addEventListener('click', () => {
+            socket.emit('def_votar', { codigo: codigoSala, indice });
+            document.querySelectorAll('#defListaOpcoes button').forEach((b) => b.classList.remove('votado'));
+            btn.classList.add('votado');
+          });
+          li.appendChild(btn);
+          lista.appendChild(li);
+        });
+      }
+
+      function renderizarDefResultado(sala) {
+        mostrarTela('def-resultado');
+        limparTimer();
+        const estado = sala.estado || {};
+        document.getElementById('defResultadoPalavra').textContent = estado.palavra || '-';
+        document.getElementById('defResultadoReal').textContent = estado.definicao_real || '-';
+
+        const lista = document.getElementById('defResultadoOpcoes');
+        lista.innerHTML = '';
+        (estado.opcoes_reveladas || []).forEach((op) => {
+          const li = document.createElement('li');
+          const cor = op.eh_real ? 'var(--accent)' : 'var(--muted)';
+          const autor = op.eh_real ? '✅ Real' : `✍️ ${op.autor_nome}`;
+          li.innerHTML = `<div style="width:100%;"><div style="color:${cor}; font-size:0.75rem; margin-bottom:4px;">${autor} · ${op.votos} voto(s)</div><div>${op.texto}</div></div>`;
+          li.style.display = 'block';
+          lista.appendChild(li);
+        });
+
+        renderizarRanking('defRankingRodada', sala);
+
+        const host = souHost(sala);
+        document.getElementById('defAcoesHost').style.display = host ? 'block' : 'none';
+        document.getElementById('defStatusFim').textContent = host ? '' : 'Aguardando o host...';
+      }
+
+      // =====================================================================
+      // Roteador central de telas
+      // =====================================================================
+      function renderizarSala(sala) {
+        switch (sala.fase_atual) {
+          case 'ESPIAO_RODADA': renderizarEspiaoRodada(sala); break;
+          case 'ESPIAO_VOTACAO': renderizarEspiaoVotacao(sala); break;
+          case 'ESPIAO_RESULTADO': renderizarEspiaoResultado(sala); break;
+          case 'BOMBA_RODADA': renderizarBombaRodada(sala); break;
+          case 'BOMBA_RESULTADO': renderizarBombaResultado(sala); break;
+          case 'DEF_ESCREVER': jaEnviouDefinicao = false; renderizarDefEscrever(sala); break;
+          case 'DEF_VOTAR': renderizarDefVotar(sala); break;
+          case 'DEF_RESULTADO': renderizarDefResultado(sala); break;
+          default:
+            limparTimer();
+            mostrarTela('lobby');
+            renderizarLobby(sala);
+            break;
+        }
+      }
+
+      // =====================================================================
+      // Socket events
+      // =====================================================================
+      socket.on('connect', () => {
+        if (!codigoSala) {
+          codigoSala = localStorage.getItem('codigoSala') || '';
+          nomeJogador = localStorage.getItem('nomeJogador') || '';
+        }
+        if (codigoSala && nomeJogador) {
+          socket.emit('join_game', { nome: nomeJogador, codigo: codigoSala, usuario_id: usuarioId });
+        }
+      });
+
+      socket.on('sala_atualizada', (sala) => {
+        if (!sala || !sala.codigo) return;
+        codigoSala = sala.codigo;
+        salaAtual = sala;
+        renderizarSala(sala);
+      });
+
+      socket.on('estado_privado', (dados) => {
+        estadoPrivado = {
+          espiao: (dados && dados.espiao) || null,
+          definicao: (dados && dados.definicao) || null,
+        };
+        if (salaAtual) renderizarSala(salaAtual);
+      });
+
+      socket.on('erro', (dados) => {
+        const mensagem = (dados && dados.mensagem) || 'Erro inesperado.';
+        document.getElementById('erroLogin').textContent = mensagem;
+        document.getElementById('bombaErro').textContent = mensagem;
+        const statusLobby = document.getElementById('statusLobby');
+        if (statusLobby) statusLobby.textContent = mensagem;
+      });
+
+      mostrarTela('login');
+    </script>
+  </body>
+</html>
