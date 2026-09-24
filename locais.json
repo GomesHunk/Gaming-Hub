@@ -1,0 +1,332 @@
+[
+  {
+    "nome": "Praia",
+    "papeis": [
+      "Salva-vidas",
+      "Turista",
+      "Vendedor de sorvete",
+      "Surfista",
+      "Barraqueiro",
+      "Fotógrafo"
+    ]
+  },
+  {
+    "nome": "Hospital",
+    "papeis": [
+      "Médico",
+      "Enfermeiro",
+      "Paciente",
+      "Visitante",
+      "Recepcionista",
+      "Ambulância"
+    ]
+  },
+  {
+    "nome": "Escritório",
+    "papeis": [
+      "Gerente",
+      "Estagiário",
+      "Recepcionista",
+      "Contador",
+      "TI",
+      "Faxineiro"
+    ]
+  },
+  {
+    "nome": "Casamento",
+    "papeis": [
+      "Noivo",
+      "Noiva",
+      "Padrinho",
+      "Fotógrafo",
+      "Padre",
+      "Convidado"
+    ]
+  },
+  {
+    "nome": "Submarino",
+    "papeis": [
+      "Capitão",
+      "Sonarista",
+      "Mecânico",
+      "Cozinheiro",
+      "Cientista",
+      "Marinheiro"
+    ]
+  },
+  {
+    "nome": "Escola",
+    "papeis": [
+      "Professor",
+      "Diretor",
+      "Aluno",
+      "Zelador",
+      "Merendeira",
+      "Bibliotecário"
+    ]
+  },
+  {
+    "nome": "Restaurante",
+    "papeis": [
+      "Chef",
+      "Garçom",
+      "Cliente",
+      "Sommelier",
+      "Lava-louças",
+      "Gerente"
+    ]
+  },
+  {
+    "nome": "Aeroporto",
+    "papeis": [
+      "Piloto",
+      "Comissário",
+      "Passageiro",
+      "Segurança",
+      "Bagageiro",
+      "Controlador"
+    ]
+  },
+  {
+    "nome": "Banco",
+    "papeis": [
+      "Gerente",
+      "Caixa",
+      "Cliente",
+      "Segurança",
+      "Assaltante",
+      "Consultor"
+    ]
+  },
+  {
+    "nome": "Circo",
+    "papeis": [
+      "Palhaço",
+      "Domador",
+      "Trapezista",
+      "Bilheteiro",
+      "Espectador",
+      "Mágico"
+    ]
+  },
+  {
+    "nome": "Navio Pirata",
+    "papeis": [
+      "Capitão",
+      "Imediato",
+      "Marujo",
+      "Prisioneiro",
+      "Cozinheiro",
+      "Vigia"
+    ]
+  },
+  {
+    "nome": "Academia",
+    "papeis": [
+      "Personal",
+      "Aluno",
+      "Recepcionista",
+      "Nutricionista",
+      "Faxineiro",
+      "Instrutor"
+    ]
+  },
+  {
+    "nome": "Teatro",
+    "papeis": [
+      "Ator",
+      "Diretor",
+      "Plateia",
+      "Cenógrafo",
+      "Figurinista",
+      "Bilheteiro"
+    ]
+  },
+  {
+    "nome": "Delegacia",
+    "papeis": [
+      "Delegado",
+      "Investigador",
+      "Suspeito",
+      "Advogado",
+      "Repórter",
+      "Estagiário"
+    ]
+  },
+  {
+    "nome": "Zoológico",
+    "papeis": [
+      "Veterinário",
+      "Visitante",
+      "Tratador",
+      "Guia",
+      "Vendedor",
+      "Fotógrafo"
+    ]
+  },
+  {
+    "nome": "Estação Espacial",
+    "papeis": [
+      "Astronauta",
+      "Comandante",
+      "Cientista",
+      "Engenheiro",
+      "Médico",
+      "Piloto"
+    ]
+  },
+  {
+    "nome": "Cassino",
+    "papeis": [
+      "Crupiê",
+      "Apostador",
+      "Segurança",
+      "Gerente",
+      "Garçom",
+      "Sortudo"
+    ]
+  },
+  {
+    "nome": "Fazenda",
+    "papeis": [
+      "Fazendeiro",
+      "Veterinário",
+      "Peão",
+      "Turista",
+      "Cozinheira",
+      "Tratorista"
+    ]
+  },
+  {
+    "nome": "Estúdio de TV",
+    "papeis": [
+      "Apresentador",
+      "Câmera",
+      "Diretor",
+      "Convidado",
+      "Maquiador",
+      "Produtor"
+    ]
+  },
+  {
+    "nome": "Igreja",
+    "papeis": [
+      "Padre",
+      "Coroinha",
+      "Fiel",
+      "Sacristão",
+      "Organista",
+      "Visitante"
+    ]
+  },
+  {
+    "nome": "Universidade",
+    "papeis": [
+      "Professor",
+      "Aluno",
+      "Reitor",
+      "Bibliotecário",
+      "Bedel",
+      "Pesquisador"
+    ]
+  },
+  {
+    "nome": "Spa",
+    "papeis": [
+      "Massagista",
+      "Cliente",
+      "Recepcionista",
+      "Esteticista",
+      "Gerente",
+      "Terapeuta"
+    ]
+  },
+  {
+    "nome": "Base Militar",
+    "papeis": [
+      "General",
+      "Soldado",
+      "Sargento",
+      "Médico",
+      "Piloto",
+      "Recruta"
+    ]
+  },
+  {
+    "nome": "Festival de Música",
+    "papeis": [
+      "Cantor",
+      "Fã",
+      "Segurança",
+      "Produtor",
+      "Roadie",
+      "Vendedor"
+    ]
+  },
+  {
+    "nome": "Parque de Diversões",
+    "papeis": [
+      "Operador",
+      "Visitante",
+      "Vendedor",
+      "Segurança",
+      "Palhaço",
+      "Mascote"
+    ]
+  },
+  {
+    "nome": "Laboratório",
+    "papeis": [
+      "Cientista",
+      "Assistente",
+      "Cobaia",
+      "Diretor",
+      "Estagiário",
+      "Segurança"
+    ]
+  },
+  {
+    "nome": "Trem",
+    "papeis": [
+      "Maquinista",
+      "Passageiro",
+      "Cobrador",
+      "Turista",
+      "Fiscal",
+      "Fugitivo"
+    ]
+  },
+  {
+    "nome": "Biblioteca",
+    "papeis": [
+      "Bibliotecário",
+      "Estudante",
+      "Pesquisador",
+      "Zelador",
+      "Visitante",
+      "Autor"
+    ]
+  },
+  {
+    "nome": "Supermercado",
+    "papeis": [
+      "Caixa",
+      "Gerente",
+      "Cliente",
+      "Repositor",
+      "Segurança",
+      "Açougueiro"
+    ]
+  },
+  {
+    "nome": "Nave Espacial",
+    "papeis": [
+      "Capitão",
+      "Piloto",
+      "Alienígena",
+      "Engenheiro",
+      "Cientista",
+      "Passageiro"
+    ]
+  }
+]
