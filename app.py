@@ -32,9 +32,22 @@ STATUS_INATIVOS = ("offline", "saiu")
 MIN_JOGADORES = {"ESPIAO": 3, "BOMBA": 2, "DEFINICAO": 3}
 TEMPO_ESPIAO_PADRAO = 480
 TEMPO_VOTACAO_ESPIAO = 45
-TEMPO_TURNO_BOMBA = 12
 TEMPO_ESCREVER_DEF = 75
 TEMPO_VOTAR_DEF = 45
+
+# --- Progressão de dificuldade da Bomba de Palavras ---
+BOMBA_NIVEL_MAX = 6
+BOMBA_ACERTOS_POR_NIVEL = 4       # a cada N acertos (de qualquer jogador), sobe 1 nível
+BOMBA_ACERTOS_NIVEL_MAX_LIMITE = 6  # acertos extras no nível máximo até forçar o fim
+BOMBA_TEMPO_BASE = 14
+BOMBA_TEMPO_MINIMO = 5
+BOMBA_TEMPO_PASSO = 2             # segundos a menos por nível
+BOMBA_JANELA_CONTESTACAO = 10     # segundos pra contestar a última palavra
+BOMBA_TEMPO_VOTACAO_CONTESTACAO = 20
+
+
+def tempo_turno_bomba(nivel):
+    return max(BOMBA_TEMPO_MINIMO, BOMBA_TEMPO_BASE - (nivel - 1) * BOMBA_TEMPO_PASSO)
 
 
 @app.route("/")
@@ -128,7 +141,8 @@ def estado_publico(sala):
         return pub
 
     if modo == "BOMBA":
-        return {
+        ultima_palavra = estado.get("palavras_usadas_lista", [])[-1] if estado.get("palavras_usadas_lista") else None
+        pub = {
             "fragmento_atual": estado.get("fragmento_atual"),
             "ordem": estado.get("ordem", []),
             "indice_turno": estado.get("indice_turno", 0),
@@ -136,7 +150,19 @@ def estado_publico(sala):
             "eliminados": estado.get("eliminados", []),
             "palavras_usadas_rodada": estado.get("palavras_usadas_lista", []),
             "vencedor_id": estado.get("vencedor_id") if fase == "BOMBA_RESULTADO" else None,
+            "motivo_fim": estado.get("motivo_fim") if fase == "BOMBA_RESULTADO" else None,
+            "nivel": estado.get("nivel", 1),
+            "ultima_palavra_janela_ate": (ultima_palavra or {}).get("janela_contestacao_ate") if fase == "BOMBA_RODADA" else None,
+            "contestacao": None,
         }
+        if fase == "BOMBA_CONTESTACAO":
+            contestacao = estado.get("contestacao") or {}
+            pub["contestacao"] = {
+                "texto": contestacao.get("texto"),
+                "autor_id": contestacao.get("autor_id"),
+                "total_votos": len(contestacao.get("votos", {})),
+            }
+        return pub
 
     if modo == "DEFINICAO":
         pub = {
@@ -425,12 +451,31 @@ def espiao_adivinhar_local(data):
 # BOMBA DE PALAVRAS
 # ---------------------------------------------------------------------------
 
-def escolher_fragmento(sala):
+def pool_fragmentos_por_nivel(nivel):
+    """Fragmentos curtos (2 letras) são fáceis de encontrar em várias
+    palavras; os mais longos (4+ letras, tipo 'MENTE', 'INTER') são bem
+    mais difíceis. Níveis mais altos sorteiam dos grupos mais difíceis."""
+    faceis = [f for f in FRAGMENTOS if len(f) <= 2]
+    medios = [f for f in FRAGMENTOS if len(f) == 3]
+    dificeis = [f for f in FRAGMENTOS if len(f) >= 4]
+
+    if nivel <= 2:
+        pool = faceis + medios[: len(medios) // 3]
+    elif nivel <= 4:
+        pool = medios + dificeis
+    else:
+        pool = dificeis + medios[len(medios) // 2:]
+
+    return pool or FRAGMENTOS
+
+
+def escolher_fragmento(sala, nivel=1):
     garantir_trackers(sala)
     recentes = sala["fragmentos_recentes"]
-    disponiveis = [f for f in FRAGMENTOS if f not in recentes]
+    pool = pool_fragmentos_por_nivel(nivel)
+    disponiveis = [f for f in pool if f not in recentes]
     if not disponiveis:
-        disponiveis = FRAGMENTOS[:]
+        disponiveis = pool[:]
     fragmento = disponiveis[randint(0, len(disponiveis) - 1)]
     recentes.append(fragmento)
     if len(recentes) > 15:
@@ -453,7 +498,7 @@ def iniciar_rodada_bomba(codigo_sala):
     sala["modo"] = "BOMBA"
     sala["fase_atual"] = "BOMBA_RODADA"
     sala["tempo_inicio"] = int(time.time())
-    sala["tempo_rodada"] = TEMPO_TURNO_BOMBA
+    sala["tempo_rodada"] = tempo_turno_bomba(1)
     sala["estado"] = {
         "tipo": "BOMBA",
         "ordem": ids,
@@ -462,8 +507,12 @@ def iniciar_rodada_bomba(codigo_sala):
         "eliminados": [],
         "palavras_usadas": set(),
         "palavras_usadas_lista": [],
-        "fragmento_atual": escolher_fragmento(sala),
+        "fragmento_atual": escolher_fragmento(sala, 1),
         "vencedor_id": None,
+        "motivo_fim": None,
+        "nivel": 1,
+        "acertos_nivel": 0,
+        "contestacao": None,
     }
 
     emitir_atualizacao(codigo_sala)
@@ -479,22 +528,60 @@ def jogador_da_vez_bomba(sala):
     return ordem[indice]
 
 
-def avancar_turno_bomba(sala, codigo_sala):
+def finalizar_bomba_por_eliminacao(sala):
+    """Termina a rodada quando só sobra 1 jogador de pé. Retorna True se
+    encerrou."""
     estado = sala["estado"]
     ordem = estado["ordem"]
     ativos_na_rodada = [i for i in ordem if i not in estado["eliminados"]]
 
-    if len(ativos_na_rodada) <= 1:
-        vencedor_id = ativos_na_rodada[0] if ativos_na_rodada else None
-        estado["vencedor_id"] = vencedor_id
-        if vencedor_id:
-            vencedor = jogador_por_id(sala, vencedor_id)
-            if vencedor:
-                vencedor["pontuacao"] = vencedor.get("pontuacao", 0) + 5
-        sala["fase_atual"] = "BOMBA_RESULTADO"
-        sala["tempo_inicio"] = None
+    if len(ativos_na_rodada) > 1:
+        return False
+
+    vencedor_id = ativos_na_rodada[0] if ativos_na_rodada else None
+    estado["vencedor_id"] = vencedor_id
+    estado["motivo_fim"] = "eliminacao"
+    if vencedor_id:
+        vencedor = jogador_por_id(sala, vencedor_id)
+        if vencedor:
+            vencedor["pontuacao"] = vencedor.get("pontuacao", 0) + 5
+    sala["fase_atual"] = "BOMBA_RESULTADO"
+    sala["tempo_inicio"] = None
+    return True
+
+
+def finalizar_bomba_por_nivel_maximo(sala):
+    """Termina a rodada quando o nível máximo já foi jogado por tempo
+    suficiente e ninguém foi eliminado — evita partida infinita entre
+    jogadores muito bons. Quem tiver mais vidas vence."""
+    estado = sala["estado"]
+    ordem = estado["ordem"]
+    ativos_na_rodada = [i for i in ordem if i not in estado["eliminados"]]
+
+    melhor_id = None
+    melhores_vidas = -1
+    for identificador in ativos_na_rodada:
+        vidas = estado["vidas"].get(identificador, 0)
+        if vidas > melhores_vidas:
+            melhores_vidas = vidas
+            melhor_id = identificador
+
+    estado["vencedor_id"] = melhor_id
+    estado["motivo_fim"] = "nivel_maximo"
+    if melhor_id:
+        vencedor = jogador_por_id(sala, melhor_id)
+        if vencedor:
+            vencedor["pontuacao"] = vencedor.get("pontuacao", 0) + 5
+    sala["fase_atual"] = "BOMBA_RESULTADO"
+    sala["tempo_inicio"] = None
+
+
+def avancar_turno_bomba(sala, codigo_sala):
+    if finalizar_bomba_por_eliminacao(sala):
         return
 
+    estado = sala["estado"]
+    ordem = estado["ordem"]
     proximo_indice = estado["indice_turno"]
     tamanho = len(ordem)
     for _ in range(tamanho):
@@ -502,8 +589,24 @@ def avancar_turno_bomba(sala, codigo_sala):
         if ordem[proximo_indice] not in estado["eliminados"]:
             break
     estado["indice_turno"] = proximo_indice
-    estado["fragmento_atual"] = escolher_fragmento(sala)
+    estado["fragmento_atual"] = escolher_fragmento(sala, estado.get("nivel", 1))
     sala["tempo_inicio"] = int(time.time())
+    sala["tempo_rodada"] = tempo_turno_bomba(estado.get("nivel", 1))
+
+
+def registrar_acerto_bomba(sala):
+    """Chamado quando uma palavra é aceita. Controla a progressão de
+    nível/dificuldade e o encerramento por nível máximo esgotado."""
+    estado = sala["estado"]
+    estado["acertos_nivel"] = estado.get("acertos_nivel", 0) + 1
+
+    if estado.get("nivel", 1) < BOMBA_NIVEL_MAX:
+        if estado["acertos_nivel"] >= BOMBA_ACERTOS_POR_NIVEL:
+            estado["nivel"] += 1
+            estado["acertos_nivel"] = 0
+    else:
+        if estado["acertos_nivel"] >= BOMBA_ACERTOS_NIVEL_MAX_LIMITE:
+            finalizar_bomba_por_nivel_maximo(sala)
 
 
 @socketio.on("bomba_responder")
@@ -537,14 +640,24 @@ def bomba_responder(data):
         emit("erro", {"mensagem": "Essa palavra já foi usada nessa rodada."})
         return
 
+    agora = time.time()
     estado["palavras_usadas"].add(palavra_norm)
-    estado["palavras_usadas_lista"].append(palavra)
+    estado["palavras_usadas_lista"].append({
+        "texto": palavra,
+        "autor_id": meu_id,
+        "timestamp": agora,
+        "janela_contestacao_ate": agora + BOMBA_JANELA_CONTESTACAO,
+        "invalidada": False,
+    })
     if len(estado["palavras_usadas_lista"]) > 20:
         estado["palavras_usadas_lista"].pop(0)
 
     jogador["pontuacao"] = jogador.get("pontuacao", 0) + 1
+    registrar_acerto_bomba(sala)
 
-    avancar_turno_bomba(sala, codigo)
+    if sala.get("fase_atual") == "BOMBA_RODADA":  # pode ter virado RESULTADO por nível máximo
+        avancar_turno_bomba(sala, codigo)
+
     emitir_atualizacao(codigo)
 
 
@@ -559,8 +672,9 @@ def bomba_tempo_esgotado(data):
     # Proteção contra disparo duplicado de múltiplos clientes: só processa
     # se o tempo realmente já esgotou pro turno atual.
     tempo_inicio = sala.get("tempo_inicio")
-    tempo_decorrido = time.time() - tempo_inicio if tempo_inicio is not None else TEMPO_TURNO_BOMBA
-    if tempo_decorrido < TEMPO_TURNO_BOMBA - 1:
+    duracao_turno = sala.get("tempo_rodada") or tempo_turno_bomba(estado.get("nivel", 1))
+    tempo_decorrido = time.time() - tempo_inicio if tempo_inicio is not None else duracao_turno
+    if tempo_decorrido < duracao_turno - 1:
         return
 
     meu_id = jogador_da_vez_bomba(sala)
@@ -576,10 +690,133 @@ def bomba_tempo_esgotado(data):
     emitir_atualizacao(codigo)
 
 
+@socketio.on("bomba_contestar")
+def bomba_contestar(data):
+    """Qualquer jogador ativo pode contestar a ÚLTIMA palavra aceita,
+    dentro de uma janela curta, se achar que não é uma palavra de
+    verdade. Isso substitui um dicionário (que não temos) por uma
+    validação social rápida entre os próprios jogadores."""
+    codigo = (data or {}).get("codigo", "").strip().upper()
+    sala = salas.get(codigo)
+    if not sala or sala.get("fase_atual") != "BOMBA_RODADA":
+        return
+
+    jogador = next((j for j in sala["jogadores"] if j.get("sid") == request.sid), None)
+    if not jogador:
+        return
+
+    estado = sala["estado"]
+    lista = estado.get("palavras_usadas_lista", [])
+    if not lista:
+        emit("erro", {"mensagem": "Não há palavra pra contestar."})
+        return
+
+    indice_ultima = len(lista) - 1
+    ultima = lista[indice_ultima]
+    meu_id = identificador_jogador(jogador)
+
+    if ultima["autor_id"] == meu_id:
+        emit("erro", {"mensagem": "Você não pode contestar sua própria palavra."})
+        return
+    if time.time() > ultima["janela_contestacao_ate"]:
+        emit("erro", {"mensagem": "O tempo pra contestar essa palavra já passou."})
+        return
+
+    estado["contestacao"] = {
+        "indice_palavra": indice_ultima,
+        "autor_id": ultima["autor_id"],
+        "texto": ultima["texto"],
+        "votos": {meu_id: False},
+    }
+    sala["fase_atual"] = "BOMBA_CONTESTACAO"
+    sala["tempo_inicio"] = int(time.time())
+    sala["tempo_rodada"] = BOMBA_TEMPO_VOTACAO_CONTESTACAO
+    emitir_atualizacao(codigo)
+
+
+def resolver_contestacao_bomba(sala, codigo_sala):
+    estado = sala["estado"]
+    contestacao = estado.get("contestacao") or {}
+    votos = contestacao.get("votos", {})
+
+    validos = sum(1 for v in votos.values() if v)
+    invalidos = sum(1 for v in votos.values() if not v)
+
+    if invalidos > validos:
+        # Maioria clara considerou a palavra inválida: desfaz o ponto e
+        # tira 1 vida de quem respondeu, igual um tempo esgotado.
+        indice = contestacao.get("indice_palavra")
+        autor_id = contestacao.get("autor_id")
+        lista = estado.get("palavras_usadas_lista", [])
+        if indice is not None and 0 <= indice < len(lista):
+            lista[indice]["invalidada"] = True
+
+        autor = jogador_por_id(sala, autor_id)
+        if autor:
+            autor["pontuacao"] = max(0, autor.get("pontuacao", 0) - 1)
+        if autor_id:
+            estado["vidas"][autor_id] = max(0, estado["vidas"].get(autor_id, 0) - 1)
+            if estado["vidas"][autor_id] <= 0 and autor_id not in estado["eliminados"]:
+                estado["eliminados"].append(autor_id)
+
+    estado["contestacao"] = None
+
+    if finalizar_bomba_por_eliminacao(sala):
+        return
+
+    sala["fase_atual"] = "BOMBA_RODADA"
+    sala["tempo_inicio"] = int(time.time())
+    sala["tempo_rodada"] = tempo_turno_bomba(estado.get("nivel", 1))
+
+
+@socketio.on("bomba_votar_contestacao")
+def bomba_votar_contestacao(data):
+    codigo = (data or {}).get("codigo", "").strip().upper()
+    valida = bool((data or {}).get("valida", False))
+    sala = salas.get(codigo)
+    if not sala or sala.get("fase_atual") != "BOMBA_CONTESTACAO":
+        return
+
+    jogador = next((j for j in sala["jogadores"] if j.get("sid") == request.sid), None)
+    if not jogador:
+        return
+
+    meu_id = identificador_jogador(jogador)
+    sala["estado"]["contestacao"]["votos"][meu_id] = valida
+
+    ativos = indices_ativos(sala)
+    if len(sala["estado"]["contestacao"]["votos"]) >= len(ativos):
+        resolver_contestacao_bomba(sala, codigo)
+
+    emitir_atualizacao(codigo)
+
+
+@socketio.on("bomba_tempo_contestacao_esgotado")
+def bomba_tempo_contestacao_esgotado(data):
+    codigo = (data or {}).get("codigo", "").strip().upper()
+    sala = salas.get(codigo)
+    if not sala or sala.get("fase_atual") != "BOMBA_CONTESTACAO":
+        return
+    resolver_contestacao_bomba(sala, codigo)
+    emitir_atualizacao(codigo)
+
+
 def _pular_turno_por_desconexao(sala, codigo_sala, identificador):
     """Chamado quando quem está na vez da Bomba cai da sala: trata como se
-    tivesse zerado o tempo, sem esperar o timeout normal."""
-    if sala.get("modo") != "BOMBA" or sala.get("fase_atual") != "BOMBA_RODADA":
+    tivesse zerado o tempo, sem esperar o timeout normal. Também resolve
+    uma votação de contestação que ficaria travada esperando o voto de
+    alguém que acabou de sair."""
+    if sala.get("modo") != "BOMBA":
+        return
+
+    if sala.get("fase_atual") == "BOMBA_CONTESTACAO":
+        ativos = indices_ativos(sala)
+        votos = (sala["estado"].get("contestacao") or {}).get("votos", {})
+        if len(votos) >= len(ativos):
+            resolver_contestacao_bomba(sala, codigo_sala)
+        return
+
+    if sala.get("fase_atual") != "BOMBA_RODADA":
         return
     estado = sala["estado"]
     if jogador_da_vez_bomba(sala) != identificador:
@@ -588,6 +825,7 @@ def _pular_turno_por_desconexao(sala, codigo_sala, identificador):
     if estado["vidas"][identificador] <= 0 and identificador not in estado["eliminados"]:
         estado["eliminados"].append(identificador)
     avancar_turno_bomba(sala, codigo_sala)
+
 
 
 # ---------------------------------------------------------------------------
