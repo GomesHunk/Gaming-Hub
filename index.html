@@ -162,7 +162,19 @@
         background: var(--panel-2); border-radius: 14px; padding: 18px; margin-bottom: 16px;
         border: 1px solid rgba(255, 255, 255, 0.06); text-align: center;
       }
-      .papel-box.espiao { border-color: rgba(255, 107, 122, 0.4); background: rgba(255, 107, 122, 0.08); }
+      .papel-box-neutro { border-style: dashed; }
+      .papel-box-revelado { border-color: rgba(124, 156, 255, 0.35); }
+
+      .barra-revelacao {
+        height: 4px; width: 100%; background: rgba(255, 255, 255, 0.08); border-radius: 4px;
+        margin-bottom: 14px; overflow: hidden;
+      }
+      .barra-revelacao-preenchimento {
+        height: 100%; width: 100%; background: var(--primary); transform-origin: left;
+        animation: encolher-barra linear forwards;
+      }
+      @keyframes encolher-barra { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
       .label-mini { color: var(--muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
       .valor-grande { font-size: 1.4rem; font-weight: 700; }
 
@@ -190,9 +202,18 @@
       /* ---------- BOMBA ---------- */
       .fragmento-box {
         text-align: center; background: rgba(124, 156, 255, 0.12); border: 2px solid rgba(124, 156, 255, 0.3);
-        border-radius: 16px; padding: 20px; margin-bottom: 16px;
+        border-radius: 16px; padding: 20px; margin-bottom: 16px; transition: border-color 0.3s ease, background 0.3s ease;
       }
+      .fragmento-box.nivel-medio { background: rgba(255, 209, 102, 0.12); border-color: rgba(255, 209, 102, 0.4); }
+      .fragmento-box.nivel-alto { background: rgba(255, 107, 122, 0.14); border-color: rgba(255, 107, 122, 0.5); }
       .fragmento-texto { font-size: 2.4rem; font-weight: 800; letter-spacing: 0.05em; }
+
+      .nivel-badge {
+        text-align: center; font-size: 0.8rem; font-weight: 700; color: var(--muted);
+        background: var(--panel-2); border-radius: 20px; padding: 4px 14px; width: fit-content; margin: 0 auto 12px;
+      }
+      .nivel-badge.subiu { animation: nivel-flash 1s ease; }
+      @keyframes nivel-flash { 0% { transform: scale(1.3); color: var(--gold); } 100% { transform: scale(1); } }
 
       .vidas-lista { list-style: none; padding: 0; margin: 10px 0 16px; display: flex; flex-direction: column; gap: 6px; }
       .vidas-lista li {
@@ -207,6 +228,17 @@
 
       /* ---------- DEFINIÇÃO FALSA ---------- */
       .palavra-destaque { text-align: center; font-size: 2rem; font-weight: 800; margin: 10px 0 18px; color: var(--primary); }
+
+      .contador-caracteres { text-align: right; color: var(--muted); font-size: 0.75rem; margin-top: 4px; }
+      .contador-caracteres.perto-limite { color: var(--gold); }
+      .contador-caracteres.no-limite { color: var(--danger); }
+
+      .enviado-box {
+        background: rgba(119, 230, 179, 0.08); border: 1px solid rgba(119, 230, 179, 0.25);
+        border-radius: 14px; padding: 16px; margin-bottom: 10px;
+      }
+      .enviado-selo { color: var(--accent); font-weight: 700; font-size: 0.85rem; margin-bottom: 8px; }
+      .enviado-texto { color: var(--text); font-size: 0.92rem; line-height: 1.4; }
 
       /* ---------- FIM DE RODADA / RANKING ---------- */
       .lista-pontos { list-style: none; padding: 0; margin: 16px 0; display: flex; flex-direction: column; gap: 8px; }
@@ -298,28 +330,40 @@
         <h2 style="text-align:center;">🕵️ Espião entre Nós</h2>
         <div class="timer-box"><div id="timerEspiaoRodada" class="timer-numero">-</div></div>
 
-        <div id="espiaoBoxNaoEspiao" class="papel-box">
-          <div class="label-mini">Local</div>
-          <div id="espiaoLocal" class="valor-grande">-</div>
-          <div class="label-mini" style="margin-top:14px;">Seu papel lá</div>
-          <div id="espiaoPapel" class="valor-grande">-</div>
+        <div id="espiaoCardNeutro" class="papel-box papel-box-neutro">
+          <div class="valor-grande">🎴 Seu papel está pronto</div>
+          <p style="color:var(--muted); font-size:0.82rem; margin: 8px 0 4px;">Toque pra ver — some sozinho em alguns segundos.</p>
+          <button id="btnEspiaoRevelar" type="button" class="btn-secondary">👁️ Revelar</button>
         </div>
 
-        <div id="espiaoBoxEspiao" class="papel-box espiao">
-          <div class="valor-grande">🕵️ Você é o Espião!</div>
-          <p style="color:var(--muted); font-size:0.85rem;">Tente descobrir o local sem ser pego. Locais possíveis:</p>
-          <div id="espiaoListaLocais" class="locais-possiveis"></div>
-        </div>
+        <div id="espiaoCardRevelado" class="papel-box papel-box-revelado" style="display:none;">
+          <div class="barra-revelacao"><div id="espiaoBarraTempo" class="barra-revelacao-preenchimento"></div></div>
 
-        <button id="btnEspiaoChamarVotacao" type="button" class="btn-secondary">🔍 Chamar Votação</button>
-
-        <div id="espiaoAreaAdivinhar" style="display:none; margin-top: 14px;">
-          <div class="campo">
-            <label for="espiaoSelectLocal">Espião: tentar adivinhar o local</label>
-            <select id="espiaoSelectLocal" style="width:100%; background: var(--panel-2); color: var(--text); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px;"></select>
+          <div id="espiaoConteudoNaoEspiao">
+            <div class="label-mini">Local</div>
+            <div id="espiaoLocal" class="valor-grande">-</div>
+            <div class="label-mini" style="margin-top:14px;">Seu papel lá</div>
+            <div id="espiaoPapel" class="valor-grande">-</div>
           </div>
-          <button id="btnEspiaoAdivinhar" type="button" class="btn-danger">Arriscar Palpite</button>
+
+          <div id="espiaoConteudoEspiao" style="display:none;">
+            <div class="valor-grande">🕵️ Você é o Espião!</div>
+            <p style="color:var(--muted); font-size:0.85rem;">Tente descobrir o local sem ser pego. Locais possíveis:</p>
+            <div id="espiaoListaLocais" class="locais-possiveis"></div>
+
+            <div style="margin-top: 16px; text-align:left;">
+              <div class="campo">
+                <label for="espiaoSelectLocal">Arriscar um palpite do local</label>
+                <select id="espiaoSelectLocal" style="width:100%; background: var(--panel); color: var(--text); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px;"></select>
+              </div>
+              <button id="btnEspiaoAdivinhar" type="button" class="btn-danger">Arriscar Palpite</button>
+            </div>
+          </div>
+
+          <button id="btnEspiaoEsconder" type="button" class="btn-secondary" style="margin-top:14px;">🙈 Esconder agora</button>
         </div>
+
+        <button id="btnEspiaoChamarVotacao" type="button" class="btn-secondary" style="margin-top:14px;">🔍 Chamar Votação</button>
 
         <button id="btnCancelarModo1" type="button" class="btn-secondary" style="margin-top:14px; display:none;">Cancelar / Voltar ao Lobby</button>
       </section>
@@ -356,9 +400,10 @@
       <!-- BOMBA: RODADA -->
       <section class="screen" data-tela="bomba-rodada">
         <h2 style="text-align:center;">💣 Bomba de Palavras</h2>
+        <div id="bombaNivelBadge" class="nivel-badge">Nível 1</div>
         <div class="timer-box"><div id="timerBomba" class="timer-numero">-</div></div>
 
-        <div class="fragmento-box">
+        <div id="bombaFragmentoBox" class="fragmento-box">
           <div class="label-mini">Contém</div>
           <div id="bombaFragmento" class="fragmento-texto">-</div>
         </div>
@@ -375,15 +420,36 @@
         </div>
         <div id="bombaErro" class="error"></div>
 
+        <div id="bombaAreaContestar" style="display:none;">
+          <button id="btnBombaContestar" type="button" class="btn-danger">🚩 Contestar última palavra</button>
+        </div>
+
         <div class="label-mini" style="margin-top:14px;">Últimas palavras</div>
         <ul id="bombaHistorico" class="historico-bomba"></ul>
 
         <button id="btnCancelarModo2" type="button" class="btn-secondary" style="margin-top:14px; display:none;">Cancelar / Voltar ao Lobby</button>
       </section>
 
+      <!-- BOMBA: CONTESTAÇÃO -->
+      <section class="screen" data-tela="bomba-contestacao">
+        <h2 style="text-align:center;">🚩 Palavra Contestada!</h2>
+        <div class="timer-box"><div id="timerBombaContestacao" class="timer-numero">-</div></div>
+        <div class="papel-box">
+          <div class="label-mini">A palavra é válida mesmo?</div>
+          <div id="bombaContestacaoTexto" class="valor-grande">-</div>
+        </div>
+        <p class="subtitulo">Decidam juntos: essa palavra vale ou não?</p>
+        <div id="bombaContestacaoVotar" style="display:flex; gap:10px;">
+          <button id="btnBombaVotarValida" type="button">✅ É válida</button>
+          <button id="btnBombaVotarInvalida" type="button" class="btn-danger">❌ Não é palavra</button>
+        </div>
+        <div id="bombaContestacaoStatus" class="status"></div>
+      </section>
+
       <!-- BOMBA: RESULTADO -->
       <section class="screen" data-tela="bomba-resultado">
         <h2 style="text-align:center;">💥 Fim da Rodada!</h2>
+        <div id="bombaMotivoFim" class="status" style="margin-bottom:6px;"></div>
         <div class="resultado-box">
           <div class="label-mini">Vencedor(a)</div>
           <div id="bombaVencedorNome" class="valor-grande">-</div>
@@ -406,9 +472,18 @@
         <div id="defAreaEscrever">
           <div class="campo">
             <textarea id="defInputTexto" rows="3" maxlength="200" placeholder="Sua definição inventada..."></textarea>
+            <div id="defContador" class="contador-caracteres">0 / 200</div>
           </div>
           <button id="btnDefSubmeter" type="button">Enviar Definição</button>
         </div>
+
+        <div id="defAreaEnviada" style="display:none;">
+          <div class="enviado-box">
+            <div class="enviado-selo">✅ Definição enviada</div>
+            <div id="defTextoEnviado" class="enviado-texto"></div>
+          </div>
+        </div>
+
         <div id="defStatusEscrever" class="status"></div>
 
         <button id="btnCancelarModo3" type="button" class="btn-secondary" style="margin-top:14px; display:none;">Cancelar / Voltar ao Lobby</button>
@@ -530,6 +605,7 @@
       let modoSelecionadoLobby = null;
       let timerAtivo = null;
       let botaoBombaHabilitado = true;
+      let telaAtual = null;
 
       let usuarioId = localStorage.getItem('usuario_id');
       if (!usuarioId) {
@@ -544,6 +620,7 @@
           el.classList.toggle('active', el.dataset.tela === nome);
         });
         document.getElementById('btnSairSala').style.display = nome === 'login' ? 'none' : 'block';
+        telaAtual = nome;
       }
 
       function limparTimer() {
@@ -748,6 +825,31 @@
       // =====================================================================
       // ESPIÃO ENTRE NÓS
       // =====================================================================
+      const ESPIAO_JANELA_REVELAR = 6; // segundos que o papel fica visível antes de esconder sozinho
+      let espiaoTimeoutEsconder = null;
+
+      function espiaoEsconder() {
+        if (espiaoTimeoutEsconder) { clearTimeout(espiaoTimeoutEsconder); espiaoTimeoutEsconder = null; }
+        document.getElementById('espiaoCardNeutro').style.display = 'block';
+        document.getElementById('espiaoCardRevelado').style.display = 'none';
+      }
+
+      function espiaoRevelar() {
+        document.getElementById('espiaoCardNeutro').style.display = 'none';
+        document.getElementById('espiaoCardRevelado').style.display = 'block';
+
+        const barra = document.getElementById('espiaoBarraTempo');
+        barra.style.animation = 'none';
+        void barra.offsetWidth;
+        barra.style.animation = `encolher-barra ${ESPIAO_JANELA_REVELAR}s linear forwards`;
+
+        if (espiaoTimeoutEsconder) clearTimeout(espiaoTimeoutEsconder);
+        espiaoTimeoutEsconder = setTimeout(espiaoEsconder, ESPIAO_JANELA_REVELAR * 1000);
+      }
+
+      document.getElementById('btnEspiaoRevelar').addEventListener('click', espiaoRevelar);
+      document.getElementById('btnEspiaoEsconder').addEventListener('click', espiaoEsconder);
+
       document.getElementById('btnEspiaoChamarVotacao').addEventListener('click', () => {
         socket.emit('espiao_chamar_votacao', { codigo: codigoSala });
       });
@@ -764,18 +866,22 @@
       });
 
       function renderizarEspiaoRodada(sala) {
+        const eraOutraTela = !telaAtual || telaAtual !== 'espiao-rodada';
         mostrarTela('espiao-rodada');
         mostrarBotaoCancelar(sala);
         iniciarTimer('timerEspiaoRodada', sala.tempo_inicio, sala.tempo_rodada || 480, () => {
           socket.emit('espiao_chamar_votacao', { codigo: codigoSala });
         });
 
+        // Ao entrar de novo nessa tela (nova rodada, por exemplo), sempre
+        // começa no estado neutro — nunca guarda a revelação aberta.
+        if (eraOutraTela) espiaoEsconder();
+
         const dadosEspiao = estadoPrivado.espiao;
         const souEspiao = !!(dadosEspiao && dadosEspiao.sou_espiao);
 
-        document.getElementById('espiaoBoxEspiao').style.display = souEspiao ? 'block' : 'none';
-        document.getElementById('espiaoBoxNaoEspiao').style.display = souEspiao ? 'none' : 'block';
-        document.getElementById('espiaoAreaAdivinhar').style.display = souEspiao ? 'block' : 'none';
+        document.getElementById('espiaoConteudoEspiao').style.display = souEspiao ? 'block' : 'none';
+        document.getElementById('espiaoConteudoNaoEspiao').style.display = souEspiao ? 'none' : 'block';
 
         if (souEspiao && dadosEspiao.locais_possiveis) {
           const listaEl = document.getElementById('espiaoListaLocais');
@@ -851,6 +957,8 @@
       // =====================================================================
       // BOMBA DE PALAVRAS
       // =====================================================================
+      let ultimoNivelBombaRenderizado = null;
+
       document.getElementById('btnBombaResponder').addEventListener('click', enviarPalavraBomba);
       document.getElementById('bombaInputPalavra').addEventListener('keydown', (e) => {
         if (e.key === 'Enter') enviarPalavraBomba();
@@ -863,7 +971,19 @@
         input.value = '';
       }
 
+      document.getElementById('btnBombaContestar').addEventListener('click', () => {
+        socket.emit('bomba_contestar', { codigo: codigoSala });
+      });
+
+      document.getElementById('btnBombaVotarValida').addEventListener('click', () => {
+        socket.emit('bomba_votar_contestacao', { codigo: codigoSala, valida: true });
+      });
+      document.getElementById('btnBombaVotarInvalida').addEventListener('click', () => {
+        socket.emit('bomba_votar_contestacao', { codigo: codigoSala, valida: false });
+      });
+
       document.getElementById('btnBombaNovaRodada').addEventListener('click', () => {
+        ultimoNivelBombaRenderizado = null;
         socket.emit('nova_rodada', { codigo: codigoSala });
       });
 
@@ -872,9 +992,24 @@
         mostrarBotaoCancelar(sala);
         const estado = sala.estado || {};
 
-        iniciarTimer('timerBomba', sala.tempo_inicio, sala.tempo_rodada || 12, () => {
+        iniciarTimer('timerBomba', sala.tempo_inicio, sala.tempo_rodada || 14, () => {
           socket.emit('bomba_tempo_esgotado', { codigo: codigoSala });
         });
+
+        const nivel = estado.nivel || 1;
+        const badge = document.getElementById('bombaNivelBadge');
+        badge.textContent = `Nível ${nivel}${nivel >= 5 ? ' 🔥' : ''}`;
+        if (ultimoNivelBombaRenderizado !== null && nivel > ultimoNivelBombaRenderizado) {
+          badge.classList.remove('subiu');
+          void badge.offsetWidth;
+          badge.classList.add('subiu');
+        }
+        ultimoNivelBombaRenderizado = nivel;
+
+        const fragmentoBox = document.getElementById('bombaFragmentoBox');
+        fragmentoBox.classList.remove('nivel-medio', 'nivel-alto');
+        if (nivel >= 5) fragmentoBox.classList.add('nivel-alto');
+        else if (nivel >= 3) fragmentoBox.classList.add('nivel-medio');
 
         document.getElementById('bombaFragmento').textContent = estado.fragmento_atual || '-';
 
@@ -908,18 +1043,51 @@
         historico.innerHTML = '';
         [...(estado.palavras_usadas_rodada || [])].reverse().forEach((p) => {
           const li = document.createElement('li');
-          li.textContent = p;
+          const autorNome = nomeDoJogador(sala, p.autor_id);
+          li.textContent = p.invalidada ? `${p.texto} (contestada — inválida)` : `${p.texto} — ${autorNome}`;
+          if (p.invalidada) li.style.opacity = '0.5';
           historico.appendChild(li);
         });
 
+        // Botão de contestar a última palavra, só dentro da janela e nunca
+        // pro próprio autor.
+        const ultima = (estado.palavras_usadas_rodada || [])[(estado.palavras_usadas_rodada || []).length - 1];
+        const areaContestar = document.getElementById('bombaAreaContestar');
+        const dentroDaJanela = estado.ultima_palavra_janela_ate && (Date.now() / 1000) < estado.ultima_palavra_janela_ate;
+        const souAutor = !!(ultima && meu && ultima.autor_id === meu.usuario_id);
+        areaContestar.style.display = (ultima && dentroDaJanela && !souAutor && !ultima.invalidada) ? 'block' : 'none';
+
         document.getElementById('bombaErro').textContent = '';
+      }
+
+      function renderizarBombaContestacao(sala) {
+        mostrarTela('bomba-contestacao');
+        const estado = sala.estado || {};
+        const contestacao = estado.contestacao || {};
+
+        document.getElementById('bombaContestacaoTexto').textContent = contestacao.texto || '-';
+
+        iniciarTimer('timerBombaContestacao', sala.tempo_inicio, sala.tempo_rodada || 20, () => {
+          socket.emit('bomba_tempo_contestacao_esgotado', { codigo: codigoSala });
+        });
+
+        const total = (sala.jogadores || []).filter(j => j.status !== 'offline' && j.status !== 'saiu').length;
+        document.getElementById('bombaContestacaoStatus').textContent = `${contestacao.total_votos || 0} de ${total} já votaram`;
       }
 
       function renderizarBombaResultado(sala) {
         mostrarTela('bomba-resultado');
         limparTimer();
+        ultimoNivelBombaRenderizado = null;
         const estado = sala.estado || {};
         document.getElementById('bombaVencedorNome').textContent = nomeDoJogador(sala, estado.vencedor_id) || '-';
+
+        const motivos = {
+          eliminacao: '💀 Todo mundo mais errou do que acertou — sobrou só um de pé!',
+          nivel_maximo: '🏆 Chegou no nível máximo! Venceu quem tinha mais vidas.',
+        };
+        document.getElementById('bombaMotivoFim').textContent = motivos[estado.motivo_fim] || '';
+
         renderizarRanking('bombaRankingRodada', sala);
 
         const host = souHost(sala);
@@ -931,27 +1099,52 @@
       // DEFINIÇÃO FALSA
       // =====================================================================
       let jaEnviouDefinicao = false;
+      let textoEnviadoDefinicao = '';
+      let ultimaPalavraDefRenderizada = null;
+
+      const defInputTexto = document.getElementById('defInputTexto');
+      const defContador = document.getElementById('defContador');
+      const LIMITE_CARACTERES_DEF = 200;
+
+      function atualizarContadorDef() {
+        const tamanho = defInputTexto.value.length;
+        defContador.textContent = `${tamanho} / ${LIMITE_CARACTERES_DEF}`;
+        defContador.classList.remove('perto-limite', 'no-limite');
+        if (tamanho >= LIMITE_CARACTERES_DEF) defContador.classList.add('no-limite');
+        else if (tamanho >= LIMITE_CARACTERES_DEF - 30) defContador.classList.add('perto-limite');
+      }
+      defInputTexto.addEventListener('input', atualizarContadorDef);
 
       document.getElementById('btnDefSubmeter').addEventListener('click', () => {
-        const texto = document.getElementById('defInputTexto').value.trim();
+        // Envio é sempre uma ação explícita (clique no botão) — nunca
+        // dispara sozinho por ter parado de digitar ou por timeout de UI.
+        const texto = defInputTexto.value.trim();
         if (!texto) return;
         socket.emit('def_submeter', { codigo: codigoSala, texto });
         jaEnviouDefinicao = true;
+        textoEnviadoDefinicao = texto;
         atualizarStatusEscreverDef(salaAtual);
       });
 
       document.getElementById('btnDefNovaRodada').addEventListener('click', () => {
         jaEnviouDefinicao = false;
+        textoEnviadoDefinicao = '';
         socket.emit('nova_rodada', { codigo: codigoSala });
       });
 
       function atualizarStatusEscreverDef(sala) {
         const estado = (sala && sala.estado) || {};
         const total = (sala && sala.jogadores || []).filter(j => j.status !== 'offline' && j.status !== 'saiu').length;
-        document.getElementById('defStatusEscrever').textContent = jaEnviouDefinicao
-          ? `Definição enviada! Esperando os outros... (${estado.total_submissoes || 0}/${total})`
-          : `${estado.total_submissoes || 0} de ${total} já escreveram.`;
+
         document.getElementById('defAreaEscrever').style.display = jaEnviouDefinicao ? 'none' : 'block';
+        document.getElementById('defAreaEnviada').style.display = jaEnviouDefinicao ? 'block' : 'none';
+
+        if (jaEnviouDefinicao) {
+          document.getElementById('defTextoEnviado').textContent = textoEnviadoDefinicao;
+          document.getElementById('defStatusEscrever').textContent = `Esperando os outros... (${estado.total_submissoes || 0}/${total} já enviaram)`;
+        } else {
+          document.getElementById('defStatusEscrever').textContent = `${estado.total_submissoes || 0} de ${total} já escreveram.`;
+        }
       }
 
       function renderizarDefEscrever(sala) {
@@ -959,13 +1152,25 @@
         mostrarBotaoCancelar(sala);
         const estado = sala.estado || {};
         document.getElementById('defPalavra').textContent = estado.palavra || '-';
-        document.getElementById('defInputTexto').value = '';
+
+        // Só reseta o campo de texto quando é uma palavra REALMENTE nova
+        // (rodada nova de verdade) — nunca por causa de outro jogador ter
+        // enviado a definição dele. Cada campo é isolado por jogador.
+        if (estado.palavra !== ultimaPalavraDefRenderizada) {
+          ultimaPalavraDefRenderizada = estado.palavra;
+          jaEnviouDefinicao = false;
+          textoEnviadoDefinicao = '';
+          defInputTexto.value = '';
+          atualizarContadorDef();
+        }
+
         atualizarStatusEscreverDef(sala);
 
         iniciarTimer('timerDefEscrever', sala.tempo_inicio, sala.tempo_rodada || 75, () => {
           socket.emit('def_tempo_escrever', { codigo: codigoSala });
         });
       }
+
 
       function renderizarDefVotar(sala) {
         mostrarTela('def-votar');
@@ -1029,8 +1234,9 @@
           case 'ESPIAO_VOTACAO': renderizarEspiaoVotacao(sala); break;
           case 'ESPIAO_RESULTADO': renderizarEspiaoResultado(sala); break;
           case 'BOMBA_RODADA': renderizarBombaRodada(sala); break;
+          case 'BOMBA_CONTESTACAO': renderizarBombaContestacao(sala); break;
           case 'BOMBA_RESULTADO': renderizarBombaResultado(sala); break;
-          case 'DEF_ESCREVER': jaEnviouDefinicao = false; renderizarDefEscrever(sala); break;
+          case 'DEF_ESCREVER': renderizarDefEscrever(sala); break;
           case 'DEF_VOTAR': renderizarDefVotar(sala); break;
           case 'DEF_RESULTADO': renderizarDefResultado(sala); break;
           default:
